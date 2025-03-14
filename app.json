@@ -12,30 +12,40 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "adaptiveIcon": {
+            "foregroundImage": "./assets/images/adaptive-icon.png",
+            "backgroundColor": "#ffffff"
+        },
+        "intentFilters": [
+            {
+                "action": "VIEW",
+                "data": [{ "scheme": "myapp" }],
+                "category": ["BROWSABLE", "DEFAULT"]
+            }
+        ]
     },
     "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+        "bundler": "metro",
+        "output": "static",
+        "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
+        "expo-router",
+        [
+            "expo-splash-screen",
+            {
+                "image": "./assets/images/splash-icon.png",
+                "imageWidth": 200,
+                "resizeMode": "contain",
+                "backgroundColor": "#ffffff"
+            }
+        ]
     ],
     "experiments": {
-      "typedRoutes": true
+        "typedRoutes": true
+    },
+    "extra": {
+        "googleApiKey": "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20"
     }
   }
 }

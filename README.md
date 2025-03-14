@@ -49,3 +49,18 @@ Join our community of developers creating universal apps.
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 # raider
+
+
+Age is 16+
+phone number
+Under age should not be able to report(Check Box), but get other features
+
+Home page, should be learning center, should have laws to learn
+
+language selection,english or spanish
+
+improve UI
+
+comment on the reported page
+
+view on map
