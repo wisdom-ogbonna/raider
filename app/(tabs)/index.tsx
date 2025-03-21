@@ -29,7 +29,7 @@ const Index = () => {
         </Card>
         
         <Card style={{ width: '100%', padding: 20, alignItems: 'center', marginTop: 20 }}>
-          <Text variant="titleMedium">Know Your Rights</Text>
+          <Text variant="titleMedium">Know Your Rights sir</Text>
           <Text variant="bodyMedium" style={{ marginVertical: 10, textAlign: 'center' }}>
             Learn about your legal rights and what to do in case of an ICE raid.
           </Text>

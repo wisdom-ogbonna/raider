@@ -9,43 +9,63 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.doph574.Iceraider",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "App needs location access to show ICE raids nearby.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "App requires location data to function properly.",
+        "NSLocationAlwaysUsageDescription": "Access is needed to track current location for alerts."
+      }
     },
     "android": {
-        "adaptiveIcon": {
-            "foregroundImage": "./assets/images/adaptive-icon.png",
-            "backgroundColor": "#ffffff"
-        },
-        "intentFilters": [
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
             {
-                "action": "VIEW",
-                "data": [{ "scheme": "myapp" }],
-                "category": ["BROWSABLE", "DEFAULT"]
+              "scheme": "myapp"
             }
-        ]
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
-        "bundler": "metro",
-        "output": "static",
-        "favicon": "./assets/images/favicon.png"
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-        "expo-router",
-        [
-            "expo-splash-screen",
-            {
-                "image": "./assets/images/splash-icon.png",
-                "imageWidth": 200,
-                "resizeMode": "contain",
-                "backgroundColor": "#ffffff"
-            }
-        ]
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
     ],
     "experiments": {
-        "typedRoutes": true
+      "typedRoutes": true
     },
     "extra": {
-        "googleApiKey": "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20"
+      "googleApiKey": "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7f812a2f-e0ba-4e7a-8c2c-60c3cfd23143"
+      }
     }
   }
 }

@@ -64,3 +64,10 @@ improve UI
 comment on the reported page
 
 view on map
+
+
+
+expo user: wisdomogbonna777@gmail.com
+expo pass: W&xGr_kcv5_k+nf
+
+bundle identifier : com.doph574.Iceraider
