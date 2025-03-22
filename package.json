@@ -35,7 +35,7 @@
     "expo-symbols": "~0.2.2",
     "expo-system-ui": "~4.0.8",
     "expo-web-browser": "~14.0.2",
-    "firebase": "^11.4.0",
+    "firebase": "^11.5.0",
     "firebase-auth": "^0.1.2",
     "geolib": "^3.3.4",
     "moti": "^0.30.0",

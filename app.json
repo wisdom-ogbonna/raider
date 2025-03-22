@@ -15,7 +15,23 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "App needs location access to show ICE raids nearby.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "App requires location data to function properly.",
-        "NSLocationAlwaysUsageDescription": "Access is needed to track current location for alerts."
+        "NSLocationAlwaysUsageDescription": "Access is needed to track current location for alerts.",
+        "NSCameraUsageDescription": "App needs access to your camera to take photos.",
+        "NSPhotoLibraryUsageDescription": "App needs access to your photo library to upload images.",
+        "NSMicrophoneUsageDescription": "App requires microphone access for voice input and recording.",
+        "NSBluetoothAlwaysUsageDescription": "App uses Bluetooth to detect nearby devices for enhanced functionality.",
+        "NSBluetoothPeripheralUsageDescription": "App needs Bluetooth to connect to peripherals.",
+        "NSContactsUsageDescription": "App requires access to contacts to connect with other users.",
+        "NSCalendarUsageDescription": "App uses calendar access to schedule reminders.",
+        "NSRemindersUsageDescription": "App uses reminders for sending scheduled notifications.",
+        "NSSiriUsageDescription": "App integrates with Siri to handle voice commands.",
+        "NSFaceIDUsageDescription": "App uses Face ID for authentication and login.",
+        "NSHealthShareUsageDescription": "App requires Health data sharing to track your health metrics (if applicable).",
+        "NSHealthUpdateUsageDescription": "App can update Health data to help monitor your fitness.",
+        "NSMotionUsageDescription": "App needs access to motion data to enhance location tracking accuracy.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true // Enable if the app makes HTTP (non-HTTPS) requests.
+        }
       }
     },
     "android": {
@@ -31,10 +47,7 @@
               "scheme": "myapp"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
