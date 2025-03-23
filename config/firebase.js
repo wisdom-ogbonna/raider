@@ -1,15 +1,16 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";  // Import Firestore
 
 // Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAanLEWUPYDY-O4yDXp9GYvnJCZk04V_7Y",
-  authDomain: "iceraider-10280.firebaseapp.com",
-  projectId: "iceraider-10280",
-  storageBucket: "iceraider-10280.firebasestorage.app",
-  messagingSenderId: "286447320245",
-  appId: "1:286447320245:web:4f9b26bbadccbdc0bcd2fc"
+  apiKey: "AIzaSyC1pjl3SIx8bApgZDwgJRi5dIbFjfcsjOM",
+  authDomain: "iceraider-7d19a.firebaseapp.com",
+  projectId: "iceraider-7d19a",
+  storageBucket: "iceraider-7d19a.firebasestorage.app",
+  messagingSenderId: "171431054128",
+  appId: "1:171431054128:web:d887857b6e5668c24996f5"
 };
 
 
@@ -17,5 +18,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app); // Initialize Firestor
 
-export { auth, createUserWithEmailAndPassword };
+export { auth, db, createUserWithEmailAndPassword };

@@ -6,6 +6,9 @@ import { TextInput, Button, Text, ActivityIndicator } from 'react-native-paper';
 import * as Linking from 'expo-linking';
 import { AuthContext } from '../../context/AuthContext'; // Firebase Auth Context
 import { useRouter } from 'expo-router'; // For navigation
+import { doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore"; // Firestore
+import { db } from '../../config/firebase'; // Import Firestore database
+
 
 const GOOGLE_API_KEY = 'AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20';
 
@@ -105,13 +108,30 @@ const IceReporter = () => {
     }
   };
 
-  const reportRaid = () => {
+  const reportRaid = async () => {
     if (!reportedAddress) {
       Alert.alert('Error', 'No address found to report.');
       return;
     }
-    Alert.alert('ICE Raid Location', reportedAddress);
+  
+    try {
+      await addDoc(collection(db, "ice_raids"), {
+        description,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        reportedAddress,
+        radius,
+        createdAt: serverTimestamp(),
+        reportedBy: user ? user.uid : 'Anonymous',
+      });
+  
+      Alert.alert('Success', 'ICE raid reported successfully!');
+      setDescription(''); // Clear the input
+    } catch (error) {
+      Alert.alert('Error', 'Failed to report the ICE raid. Please try again.');
+    }
   };
+  
 
   const openMaps = () => {
     if (!location) {
