@@ -5,8 +5,8 @@ import { ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router'; // Import the router hook
 
 export default function TabLayout() {
-  const { user, loading } = useContext(AuthContext); // Access user and loading status from AuthContext
-  const router = useRouter(); // Initialize router
+  const { user, loading } = useContext(AuthContext); 
+  const router = useRouter(); 
 
   if (loading) {
     return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;

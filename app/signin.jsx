@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Alert, Image } from "react-native";
 import { useRouter } from "expo-router";
-import { auth } from "../../config/firebase";
+import { auth } from "../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Text, TextInput, Button } from "react-native-paper";
 
@@ -56,7 +56,13 @@ export default function SignIn() {
         style={{ marginBottom: 15 }}
       />
       
-      <Button mode="contained" onPress={handleSignIn} loading={loading} disabled={loading}>
+      <Button
+       mode="contained" 
+       onPress={handleSignIn}
+        loading={loading}
+         disabled={loading}
+           buttonColor="#0d99b6"
+         >
         {loading ? "Signing In..." : "Sign In"}
       </Button>
       
@@ -78,9 +84,7 @@ export default function SignIn() {
         Don't have an account? Sign Up
       </Button>
       
-      <Button onPress={() => router.back()} style={{ marginTop: 10 }}>
-        ⬅️ Go Back
-      </Button>
+
     </View>
   );
 }

@@ -231,6 +231,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginBottom: 10,
+    backgroundColor: '#0d99b6', 
+    paddingVertical: 15, // Increase vertical padding for bigger height
+    paddingHorizontal: 20, // Increase horizontal padding for wider buttons
+    fontSize: 18, // Increase font size for larger text
   },
   reportedAddress: {
     textAlign: 'center',

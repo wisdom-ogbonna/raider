@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";  // Import Firestore
 
-// Your Firebase configuration
+
 const firebaseConfig = {
   apiKey: "AIzaSyC1pjl3SIx8bApgZDwgJRi5dIbFjfcsjOM",
   authDomain: "iceraider-7d19a.firebaseapp.com",

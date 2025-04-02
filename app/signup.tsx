@@ -1,14 +1,23 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Alert, Image } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
+import { AuthContext } from "../context/AuthContext"; // Import AuthContext
 import { useRouter } from "expo-router";
-import { auth, createUserWithEmailAndPassword } from "../../config/firebase";
+
+import { auth, createUserWithEmailAndPassword } from "../config/firebase";
 
 export default function Signup() {
   const router = useRouter();
+  const { user } = useContext(AuthContext); // Get the user from context
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      router.push("/report");
+    }
+  }, [user, router]);
 
   const handleSignup = async () => {
     if (!email || !password) {
@@ -49,13 +58,23 @@ export default function Signup() {
         style={{ marginBottom: 15 }}
       />
       
-      <Button mode="contained" onPress={handleSignup} loading={loading} disabled={loading}>
+      <Button
+       mode="contained" 
+       onPress={handleSignup} 
+       loading={loading} 
+       disabled={loading}
+       buttonColor="#0d99b6"
+       >
+
         {loading ? "Signing Up..." : "Sign Up"}
       </Button>
 
       <Button mode="outlined" onPress={() => router.back()} style={{ marginTop: 20 }}>
         ⬅️ Go Back
       </Button>
+           <Button onPress={() => router.push("/signin")} style={{ marginTop: 20 }}>
+              Already have an account? Sign In
+            </Button>
     </View>
   );
 }
