@@ -64,6 +64,8 @@ export default function Signup() {
        loading={loading} 
        disabled={loading}
        buttonColor="#0d99b6"
+       contentStyle={{ height: 65 }} // Increase button height
+       labelStyle={{ fontSize: 18 }} // Increase text size
        >
 
         {loading ? "Signing Up..." : "Sign Up"}

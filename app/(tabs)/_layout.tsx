@@ -28,8 +28,6 @@ export default function TabLayout() {
             },
           })}
         />
-        <Tabs.Screen name="raids" options={{ title: 'Raids' }} />
-        <Tabs.Screen name="signin" options={{ title: 'Sign In' }} />
       </Tabs>
     </AuthProvider>
   );
