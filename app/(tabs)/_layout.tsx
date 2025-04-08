@@ -1,77 +1,34 @@
-import { Stack } from 'expo-router';
-import { AuthProvider } from "../context/AuthContext";
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-import { useEffect, useState } from 'react';
-import { Platform, Alert } from 'react-native';
+import { Tabs } from 'expo-router';
+import { AuthProvider, AuthContext } from "../../context/AuthContext"; // Import AuthContext
+import { useContext } from 'react';
+import { ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router'; // Import the router hook
 
-export default function RootLayout() {
-  const [expoPushToken, setExpoPushToken] = useState('');
+export default function TabLayout() {
+  const { user, loading } = useContext(AuthContext); 
+  const router = useRouter(); 
 
-  useEffect(() => {
-    // Register for notifications
-    registerForPushNotificationsAsync().then(token => {
-      if (token) {
-        setExpoPushToken(token);
-        console.log("✅ Expo Push Token:", token);
-        // Optional: Save this token to Firestore
-      }
-    });
-
-    // Handle incoming notification
-    const subscription = Notifications.addNotificationReceivedListener(notification => {
-      const body = notification.request.content.body;
-      Alert.alert("🚨 ICE Raid Alert", body);
-    });
-
-    return () => {
-      subscription.remove(); // Clean up listener on unmount
-    };
-  }, []);
+  if (loading) {
+    return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
 
   return (
     <AuthProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="signin" options={{ headerTitle: "Sign In" }} />
-        <Stack.Screen name="signup" options={{ headerTitle: "Sign Up" }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <Tabs>
+        <Tabs.Screen name="index" options={{ title: 'Home' }} />
+        <Tabs.Screen
+          name="report"
+          options={{ title: 'Report' }}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => {
+              if (!user) {
+                e.preventDefault(); 
+                router.replace('/signin'); // Use router here for navigation
+              }
+            },
+          })}
+        />
+      </Tabs>
     </AuthProvider>
   );
-}
-
-// Function to ask permission and get push token
-async function registerForPushNotificationsAsync() {
-  if (!Device.isDevice) {
-    alert('❗Must use physical device for Push Notifications');
-    return;
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== 'granted') {
-    alert('❗Notification permissions not granted');
-    return;
-  }
-
-  const tokenData = await Notifications.getExpoPushTokenAsync();
-  console.log("Expo push token:", tokenData.data);
-
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
-
-  return tokenData.data;
 }
