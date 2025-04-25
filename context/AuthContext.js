@@ -1,6 +1,10 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, signOut } from "firebase/auth"; // Import signOut
 import { auth } from "../config/firebase";
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { doc, setDoc } from 'firebase/firestore';
+
 
 export const AuthContext = createContext();
 
