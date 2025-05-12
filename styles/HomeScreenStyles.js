@@ -72,7 +72,7 @@ const onboardingStyles = StyleSheet.create({
     color: '#6B7280',
   },
   nextButton: {
-    backgroundColor: '#34D399',
+    backgroundColor: '#2596be',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 12,

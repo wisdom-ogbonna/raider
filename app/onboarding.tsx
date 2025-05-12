@@ -6,18 +6,18 @@ import onboardingStyles from '../styles/HomeScreenStyles';
 
 const onboardingData = [
   {
-    title: 'Welcome to Dwellify',
-    description: 'Find homes, agents, and services around Choba & Port Harcourt effortlessly.',
+    title: 'Welcome to LAMIGRA',
+    description: 'Your trusted ally for reporting and staying informed about ICE raids nearby.',
     image: require('../assets/images/onboarding1.png'),
   },
   {
-    title: 'Connect with Agents Instantly',
-    description: 'Easily reach verified agents nearby and book a house or apartment with ease.',
+    title: 'Report ICE Activity Fast',
+    description: 'Instantly share details of suspected ICE raids to help protect your community.',
     image: require('../assets/images/onboarding2.png'),
   },
   {
-    title: 'Get Smart Updates',
-    description: 'Stay informed about new listings, offers, and agent replies in real time.',
+    title: 'Stay Alert, Stay Safe',
+    description: 'Get real-time notifications when an ICE raid is reported near your location.',
     image: require('../assets/images/onboarding3.png'),
   },
 ];
@@ -31,12 +31,12 @@ const OnboardingScreen = () => {
     if (pageIndex < onboardingData.length - 1) {
       pagerRef.current.setPage(pageIndex + 1);
     } else {
-      router.replace('/signin');
+      router.replace('/signup');
     }
   };
 
   const handleSkip = () => {
-    router.replace('/signin');
+    router.replace('/signup');
   };
 
   const onPageSelected = (e) => {
@@ -68,7 +68,7 @@ const OnboardingScreen = () => {
               onboardingStyles.dot,
               {
                 width: pageIndex === i ? 30 : 12,
-                backgroundColor: pageIndex === i ? '#007AFF' : '#D1D5DB',
+                backgroundColor: pageIndex === i ? '#2596be' : '#D1D5DB',
                 opacity: pageIndex === i ? 1 : 0.5,
               },
             ]}

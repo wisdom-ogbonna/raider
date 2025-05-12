@@ -1,12 +1,13 @@
 import { Tabs } from 'expo-router';
-import { AuthProvider, AuthContext } from "../../context/AuthContext"; // Import AuthContext
+import { AuthProvider, AuthContext } from '../../context/AuthContext';
 import { useContext } from 'react';
 import { ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router'; // Import the router hook
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons'; // Icon set
 
 export default function TabLayout() {
-  const { user, loading } = useContext(AuthContext); 
-  const router = useRouter(); 
+  const { user, loading } = useContext(AuthContext);
+  const router = useRouter();
 
   if (loading) {
     return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
@@ -14,19 +15,41 @@ export default function TabLayout() {
 
   return (
     <AuthProvider>
-      <Tabs>
-        <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs screenOptions={{ headerShown: false }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="home-outline" size={size} color={color} />
+            ),
+          }}
+        />
         <Tabs.Screen
           name="report"
-          options={{ title: 'Report' }}
+          options={{
+            title: 'Report',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="alert-circle-outline" size={size} color={color} />
+            ),
+          }}
           listeners={({ navigation }) => ({
             tabPress: (e) => {
               if (!user) {
-                e.preventDefault(); 
-                router.replace('/signin'); // Use router here for navigation
+                e.preventDefault();
+                router.replace('/signin');
               }
             },
           })}
+        />
+        <Tabs.Screen
+          name="raids"
+          options={{
+            title: 'Raids',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="skull-outline" size={size} color={color} />
+            ),
+          }}
         />
       </Tabs>
     </AuthProvider>
