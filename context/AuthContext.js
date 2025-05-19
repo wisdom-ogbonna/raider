@@ -1,9 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signOut } from "firebase/auth"; // Import signOut
+import { onAuthStateChanged, signOut } from "firebase/auth"; 
 import { auth } from "../config/firebase";
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
-import { doc, setDoc } from 'firebase/firestore';
 
 
 export const AuthContext = createContext();
@@ -20,13 +17,13 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // Logout function to handle sign-out
+  
   const logout = async () => {
     try {
       await signOut(auth);
     } catch (error) {
       console.error("Logout error:", error.message);
-      throw error; // Let the component handle the error message
+      throw error; 
     }
   };
 

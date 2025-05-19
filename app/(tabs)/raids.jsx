@@ -84,17 +84,24 @@ const RaidPage = () => {
     return <ActivityIndicator animating={true} size="large" style={styles.loadingIndicator} />;
   }
 
-  return (
+return (
+  <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.listContainer}>
         <Text style={styles.title}>Latest Reports</Text>
         {raids.length > 0 ? (
           raids.map((raid) => (
             <View key={raid.id} style={styles.raidItem}>
-              <Text style={styles.raidText}><Text style={styles.boldText}>Address: </Text>{raid.reportedAddress}</Text>
-              <Text style={styles.raidText}><Text style={styles.boldText}>Description: </Text>{raid.description}</Text>
-              <Text style={styles.raidText}><Text style={styles.boldText}>Reported By: </Text>{raid.reportedBy || 'Anonymous'}</Text>
-              
+              <Text style={styles.raidText}>
+                <Text style={styles.boldText}>Address: </Text>{raid.reportedAddress}
+              </Text>
+              <Text style={styles.raidText}>
+                <Text style={styles.boldText}>Description: </Text>{raid.description}
+              </Text>
+              <Text style={styles.raidText}>
+                <Text style={styles.boldText}>Reported By: </Text>{raid.reportedBy || 'Anonymous'}
+              </Text>
+
               <View style={styles.commentSection}>
                 <Text style={styles.commentTitle}>Leave a Comment</Text>
                 <TextInput
@@ -111,7 +118,14 @@ const RaidPage = () => {
         )}
       </View>
     </ScrollView>
-  );
+
+    <View style={styles.supportFab}>
+      <Text style={styles.supportFabText} 
+          onPress={() => router.push('/donate')}>?</Text>
+    </View>
+  </View>
+);
+
 };
 
 export default RaidPage;

@@ -1,8 +1,12 @@
-// firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword,signInWithCustomToken } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";  // Import Firestore
-
+import {
+  initializeAuth,
+  getReactNativePersistence,
+  createUserWithEmailAndPassword,
+  signInWithCustomToken
+} from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC1pjl3SIx8bApgZDwgJRi5dIbFjfcsjOM",
@@ -13,11 +17,14 @@ const firebaseConfig = {
   appId: "1:171431054128:web:d887857b6e5668c24996f5"
 };
 
-
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app); // Initialize Firestor
 
-export { auth, db, createUserWithEmailAndPassword,signInWithCustomToken };
+// ✅ Use initializeAuth instead of getAuth for React Native
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
+
+const db = getFirestore(app);
+
+export { auth, db, createUserWithEmailAndPassword, signInWithCustomToken };
