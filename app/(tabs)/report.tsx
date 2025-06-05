@@ -8,6 +8,8 @@ import { AuthContext } from '../../context/AuthContext'; // Firebase Auth Contex
 import { useRouter } from 'expo-router'; // For navigation
 import { doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore"; // Firestore
 import { db } from '../../config/firebase'; // Import Firestore database
+import { styles } from '../../styles/IceReporter';
+
 
 
 const GOOGLE_API_KEY = 'AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20';
@@ -217,32 +219,5 @@ const IceReporter = () => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-  },
-  map: {
-    width: '100%',
-    height: '100%',
-  },
-  input: {
-    marginVertical: 10,
-  },
-  button: {
-    marginBottom: 10,
-    backgroundColor: '#0d99b6', 
-    paddingVertical: 15, // Increase vertical padding for bigger height
-    paddingHorizontal: 20, // Increase horizontal padding for wider buttons
-    fontSize: 18, // Increase font size for larger text
-  },
-  reportedAddress: {
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  logoutButton: {
-    marginTop: 20,
-  },
-});
 
 export default IceReporter;

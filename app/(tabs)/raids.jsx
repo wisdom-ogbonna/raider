@@ -1,16 +1,35 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, ScrollView, Alert, TextInput, Button } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  TextInput,
+  Button
+} from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
-import { collection, onSnapshot, addDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy
+} from "firebase/firestore";
 import { db } from '../../config/firebase';
 import { AuthContext } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
-import styles from '../../styles/RaidPageStyles'; // External styles here
+import styles from '../../styles/RaidPageStyles';
+import { Ionicons } from '@expo/vector-icons';
 
 const RaidPage = () => {
   const [raids, setRaids] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCommentInputs, setVisibleCommentInputs] = useState({});
+  const [commentTexts, setCommentTexts] = useState({});
   const { user, loading: authLoading } = useContext(AuthContext);
+  const [commentsByRaid, setCommentsByRaid] = useState({});
+
   const router = useRouter();
 
   useEffect(() => {
@@ -42,30 +61,23 @@ const RaidPage = () => {
     return () => unsubscribe();
   }, []);
 
-  const reportRaid = async (description, reportedAddress) => {
-    if (!reportedAddress || !description) {
-      Alert.alert('Error', 'Please provide all details.');
-      return;
-    }
-
-    try {
-      const raidRef = await addDoc(collection(db, "ice_raids"), {
-        description,
-        reportedAddress,
-        reportedBy: user ? user.uid : 'Anonymous',
-        createdAt: serverTimestamp(),
-      });
-
-      console.log("Raid reported with ID:", raidRef.id);
-      Alert.alert('Success', 'ICE raid reported successfully!');
-    } catch (error) {
-      console.error("Error reporting raid:", error);
-      Alert.alert('Error', 'Failed to report the ICE raid. Please try again.');
-    }
+  const toggleCommentInput = (raidId) => {
+    setVisibleCommentInputs((prev) => ({
+      ...prev,
+      [raidId]: !prev[raidId],
+    }));
   };
 
-  const handleCommentSubmit = async (raidId, commentText) => {
-    if (commentText.trim() === '') return;
+  const handleCommentTextChange = (raidId, text) => {
+    setCommentTexts((prev) => ({
+      ...prev,
+      [raidId]: text,
+    }));
+  };
+
+  const handleCommentSubmit = async (raidId) => {
+    const commentText = commentTexts[raidId]?.trim();
+    if (!commentText) return;
 
     try {
       await addDoc(collection(db, `ice_raids/${raidId}/comments`), {
@@ -73,7 +85,10 @@ const RaidPage = () => {
         createdAt: serverTimestamp(),
         commentedBy: user ? user.uid : 'Anonymous',
       });
+
       Alert.alert('Success', 'Comment added!');
+      setCommentTexts((prev) => ({ ...prev, [raidId]: '' }));
+      setVisibleCommentInputs((prev) => ({ ...prev, [raidId]: false }));
     } catch (error) {
       console.error("Error adding comment:", error);
       Alert.alert('Error', 'Failed to add comment.');
@@ -84,48 +99,63 @@ const RaidPage = () => {
     return <ActivityIndicator animating={true} size="large" style={styles.loadingIndicator} />;
   }
 
-return (
-  <View style={{ flex: 1 }}>
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.listContainer}>
-        <Text style={styles.title}>Latest Reports</Text>
-        {raids.length > 0 ? (
-          raids.map((raid) => (
-            <View key={raid.id} style={styles.raidItem}>
-              <Text style={styles.raidText}>
-                <Text style={styles.boldText}>Address: </Text>{raid.reportedAddress}
-              </Text>
-              <Text style={styles.raidText}>
-                <Text style={styles.boldText}>Description: </Text>{raid.description}
-              </Text>
-              <Text style={styles.raidText}>
-                <Text style={styles.boldText}>Reported By: </Text>{raid.reportedBy || 'Anonymous'}
-              </Text>
+  return (
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.listContainer}>
+          <Text style={styles.title}>Latest Reports</Text>
+          {raids.length > 0 ? (
+            raids.map((raid) => (
+              <View key={raid.id} style={styles.raidItem}>
+                <Text style={styles.raidText}>
+                  <Text style={styles.boldText}>Address: </Text>{raid.reportedAddress}
+                </Text>
+                <Text style={styles.raidText}>
+                  <Text style={styles.boldText}>Description: </Text>{raid.description}
+                </Text>
+                <Text style={styles.raidText}>
+                  <Text style={styles.boldText}>Reported By: </Text>{raid.reportedBy || 'Anonymous'}
+                </Text>
 
-              <View style={styles.commentSection}>
-                <Text style={styles.commentTitle}>Leave a Comment</Text>
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="Write a comment..."
-                  onSubmitEditing={(event) => handleCommentSubmit(raid.id, event.nativeEvent.text)}
-                />
-                <Button title="Submit" color="#0d99b6" onPress={() => handleCommentSubmit(raid.id, 'Sample Comment')} />
+                {/* Comment icon */}
+                <TouchableOpacity onPress={() => toggleCommentInput(raid.id)} style={{ marginTop: 10 }}>
+                  <Ionicons name="chatbubble-outline" size={24} color="#0d99b6" />
+                </TouchableOpacity>
+
+                {/* Show comment input only if toggled */}
+                {visibleCommentInputs[raid.id] && (
+                  <View style={styles.commentSection}>
+                    <Text style={styles.commentTitle}>Leave a Comment</Text>
+                    <TextInput
+                      style={styles.commentInput}
+                      placeholder="Write a comment..."
+                      value={commentTexts[raid.id] || ''}
+                      onChangeText={(text) => handleCommentTextChange(raid.id, text)}
+                    />
+                    <Button
+                      title="Submit"
+                      color="#0d99b6"
+                      onPress={() => handleCommentSubmit(raid.id)}
+                    />
+                  </View>
+                )}
               </View>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noRaidsText}>No reports yet.</Text>
-        )}
+            ))
+          ) : (
+            <Text style={styles.noRaidsText}>No reports yet.</Text>
+          )}
+        </View>
+      </ScrollView>
+
+      <View style={styles.supportFab}>
+        <Text
+          style={styles.supportFabText}
+          onPress={() => router.push('/donate')}>
+          ?
+        </Text>
       </View>
-    </ScrollView>
-
-    <View style={styles.supportFab}>
-      <Text style={styles.supportFabText} 
-          onPress={() => router.push('/donate')}>?</Text>
     </View>
-  </View>
-);
-
+  );
 };
 
 export default RaidPage;

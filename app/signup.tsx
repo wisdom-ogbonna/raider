@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { auth, createUserWithEmailAndPassword } from "../config/firebase";
 import styles from "../styles/SignupStyles";
 
+
 export default function Signup() {
   const router = useRouter();
   const { user } = useContext(AuthContext);
