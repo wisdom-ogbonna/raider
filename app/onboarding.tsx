@@ -10,6 +10,7 @@ const onboardingData = [
     description: 'Your trusted ally for reporting and staying informed about ICE raids nearby.',
     image: require('../assets/images/onboarding1.png'),
   },
+
   {
     title: 'Report ICE Activity Fast',
     description: 'Instantly share details of suspected ICE raids to help protect your community.',

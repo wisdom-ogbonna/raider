@@ -1,34 +1,33 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { Avatar, Text, Card, Divider, ActivityIndicator } from 'react-native-paper';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { View, ScrollView, StyleSheet, Alert } from 'react-native';
+import { Avatar, Text, Card, Divider, ActivityIndicator, Button } from 'react-native-paper';
+import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { AuthContext } from '../context/AuthContext';
-import { doc, getDoc } from 'firebase/firestore'; // Add this
+import { useRouter } from 'expo-router'; // Navigation
 
 const ProfilePage = () => {
-  const { user, loading: authLoading } = useContext(AuthContext);
+  const { user, loading: authLoading, logout } = useContext(AuthContext);
   const [userRaids, setUserRaids] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null); // Add this
+  const [profile, setProfile] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!user || authLoading) return;
 
-      // Fetch user profile data
-  const fetchUserProfile = async () => {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
-        setProfile(userDoc.data());
+    const fetchUserProfile = async () => {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          setProfile(userDoc.data());
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
       }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
+    };
 
-  fetchUserProfile();
-
+    fetchUserProfile();
 
     const q = query(
       collection(db, 'ice_raids'),
@@ -44,6 +43,15 @@ const ProfilePage = () => {
 
     return () => unsubscribe();
   }, [user, authLoading]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/signin');
+    } catch (error) {
+      Alert.alert('Error', 'Logout failed. Please try again.');
+    }
+  };
 
   if (loading || authLoading) {
     return <ActivityIndicator animating={true} size="large" style={styles.loader} />;
@@ -62,6 +70,11 @@ const ProfilePage = () => {
         <Text variant="bodyMedium" style={styles.points}>
           Points: {userRaids.length * 10}
         </Text>
+
+        {/* Logout Button */}
+        <Button mode="outlined" onPress={handleLogout} style={styles.logoutButton}>
+          Logout
+        </Button>
       </View>
 
       <Divider style={styles.divider} />
@@ -110,6 +123,12 @@ const styles = StyleSheet.create({
   points: {
     color: '#777',
     marginTop: 4,
+  },
+  logoutButton: {
+    marginTop: 15,
+    borderColor: '#ff4444',
+    borderWidth: 1,
+    width: '50%',
   },
   divider: {
     marginBottom: 20,

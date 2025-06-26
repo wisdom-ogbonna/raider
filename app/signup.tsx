@@ -7,6 +7,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useRouter } from "expo-router";
 import { auth, createUserWithEmailAndPassword } from "../config/firebase";
 import styles from "../styles/SignupStyles";
+import { saveFcmTokenToFirestore } from "../utils/saveFcmTokenToFirestore"; // ⬅️ Import helper
 
 
 export default function Signup() {
@@ -16,7 +17,6 @@ export default function Signup() {
   const [name, setName] = useState(""); // New Name field
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
   const [underAge, setUnderAge] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -25,39 +25,44 @@ export default function Signup() {
   }, [user]);
 
   const validateInputs = () => {
-    if (!name || !email || !password || !phone) {
+    if (!name || !email || !password) {
       Alert.alert("Missing Info", "Please fill out all fields.");
       return false;
     }
     return true;
   };
 
-  const handleSignup = async () => {
-    if (!validateInputs()) return;
-  
-    setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const { uid } = userCredential.user;
-  
-      // Save to Firestore
-      await setDoc(doc(db, "users", uid), {
-        name,
-        email,
-        phone,
-        underAge,
-        createdAt: new Date().toISOString()
-      });
-  
-      Alert.alert("Success", "Account created!");
-      router.push(underAge ? "/raids" : "/report");
-    } catch (error) {
-      const err = error as { message: string }; // 👈 Fix here
-      Alert.alert("Signup Error", err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleSignup = async () => {
+  if (!validateInputs()) return;
+
+  setLoading(true);
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const { uid } = userCredential.user;
+
+    // 🔑 Get Firebase ID Token
+    const idToken = await userCredential.user.getIdToken();
+    console.log("Firebase ID Token:", idToken); // <-- Copy this for Thunder Client
+
+    // Save to Firestore
+    await setDoc(doc(db, "users", uid), {
+      name,
+      email,
+      underAge,
+      createdAt: new Date().toISOString()
+    });
+      // ✅ Save FCM token
+      await saveFcmTokenToFirestore(uid);
+    Alert.alert("Success", "Account created!");
+    router.push(underAge ? "/raids" : "/report");
+  } catch (error) {
+    const err = error as { message: string };
+    Alert.alert("Signup Error", err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -87,14 +92,6 @@ export default function Signup() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        mode="outlined"
-        style={styles.input}
-      />
-      <TextInput
-        label="Phone Number"
-        value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
         mode="outlined"
         style={styles.input}
       />

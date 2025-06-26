@@ -24,6 +24,7 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="signin" options={{ headerTitle: "Sign In" }} />
       <Stack.Screen name="signup" options={{ headerTitle: "Sign Up" }} />
+      <Stack.Screen name="PhoneVerificationScreen" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
     </AuthProvider>
