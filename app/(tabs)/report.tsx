@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, ScrollView, Alert, StyleSheet } from "react-native";
+import {
+  View,
+  ScrollView,
+  Alert,
+  StyleSheet,
+  Image,
+} from "react-native";
 import MapView, { Marker, Circle } from "react-native-maps";
 import * as Location from "expo-location";
 import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
 import * as Linking from "expo-linking";
+import * as ImagePicker from "expo-image-picker";
 import { AuthContext } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
-import {
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../../config/firebase";
 import { styles } from "../../styles/IceReporter";
 import { startBackgroundLocationUpdates } from "../../utils/backgroundLocationTask.js";
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
+const API_URL = "https://lamigra-backend.onrender.com:5000/api/report-raid"; // Replace with your local IP
 
 const IceReporter = () => {
   const [location, setLocation] = useState(null);
@@ -21,6 +25,7 @@ const IceReporter = () => {
   const [address, setAddress] = useState("");
   const [reportedAddress, setReportedAddress] = useState("");
   const [searching, setSearching] = useState(false);
+  const [image, setImage] = useState(null);
   const [radius, setRadius] = useState(500);
   const [region, setRegion] = useState({
     latitude: 6.5243793,
@@ -121,35 +126,51 @@ const IceReporter = () => {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: false,
+      quality: 0.7,
+      allowsEditing: true,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0]);
+    }
+  };
+
   const reportRaid = async () => {
-    if (!reportedAddress) {
-      Alert.alert("Error", "No address found to report.");
+    if (!reportedAddress || !location) {
+      Alert.alert("Error", "Location or address not available.");
       return;
     }
 
     try {
       const token = await user.getIdToken();
+      const formData = new FormData();
 
-      const payload = {
-        description,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        radius,
-        reportedAddress,
-        imageUri: null // No image included
-      };
+      formData.append("description", description);
+      formData.append("latitude", location.latitude);
+      formData.append("longitude", location.longitude);
+      formData.append("radius", radius);
+      formData.append("reportedAddress", reportedAddress);
 
-      const response = await fetch(
-        "https://lamigra-backend.onrender.com/api/report-raid",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      if (image) {
+        formData.append("file", {
+          uri: image.uri,
+          name: "raid_image.jpg",
+          type: "image/jpeg",
+        });
+      }
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -159,11 +180,9 @@ const IceReporter = () => {
       await response.json();
       Alert.alert("Success", "ICE raid reported and notifications sent!");
       setDescription("");
+      setImage(null);
     } catch (error) {
-      Alert.alert(
-        "Error",
-        error.message || "Failed to report the ICE raid. Please try again."
-      );
+      Alert.alert("Error", error.message);
     }
   };
 
@@ -236,6 +255,17 @@ const IceReporter = () => {
         onChangeText={setDescription}
         style={styles.input}
       />
+
+      <Button mode="contained" onPress={pickImage} style={styles.button}>
+        {image ? "Change Image" : "Pick Image (Optional)"}
+      </Button>
+
+      {image && (
+        <Image
+          source={{ uri: image.uri }}
+          style={{ width: "100%", height: 200, marginVertical: 10, borderRadius: 10 }}
+        />
+      )}
 
       <Button mode="contained" onPress={reportRaid} style={styles.button}>
         Report ICE Raid
