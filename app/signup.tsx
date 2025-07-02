@@ -1,23 +1,21 @@
 import React, { useContext, useEffect, useState } from "react";
-import { db } from "../config/firebase"; // Make sure this is imported
+import { db } from "../config/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { View, Alert, TouchableOpacity } from "react-native";
-import { TextInput, Button, Text, Checkbox } from "react-native-paper";
+import { TextInput, Button, Text } from "react-native-paper";
 import { AuthContext } from "../context/AuthContext";
 import { useRouter } from "expo-router";
 import { auth, createUserWithEmailAndPassword } from "../config/firebase";
 import styles from "../styles/SignupStyles";
-import { saveFcmTokenToFirestore } from "../utils/saveFcmTokenToFirestore"; // ⬅️ Import helper
-
+import { saveFcmTokenToFirestore } from "../utils/saveFcmTokenToFirestore";
 
 export default function Signup() {
   const router = useRouter();
   const { user } = useContext(AuthContext);
 
-  const [name, setName] = useState(""); // New Name field
+  const [name, setName] = useState(""); // Username/Nickname
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [underAge, setUnderAge] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -32,49 +30,45 @@ export default function Signup() {
     return true;
   };
 
-const handleSignup = async () => {
-  if (!validateInputs()) return;
+  const handleSignup = async () => {
+    if (!validateInputs()) return;
 
-  setLoading(true);
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const { uid } = userCredential.user;
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const { uid } = userCredential.user;
 
-    // 🔑 Get Firebase ID Token
-    const idToken = await userCredential.user.getIdToken();
-    console.log("Firebase ID Token:", idToken); // <-- Copy this for Thunder Client
+      const idToken = await userCredential.user.getIdToken();
+      console.log("Firebase ID Token:", idToken);
 
-    // Save to Firestore
-    await setDoc(doc(db, "users", uid), {
-      name,
-      email,
-      underAge,
-      createdAt: new Date().toISOString()
-    });
-      // ✅ Save FCM token
+      await setDoc(doc(db, "users", uid), {
+        name,
+        email,
+        createdAt: new Date().toISOString()
+      });
+
       await saveFcmTokenToFirestore(uid);
-    Alert.alert("Success", "Account created!");
-    router.push(underAge ? "/raids" : "/report");
-  } catch (error) {
-    const err = error as { message: string };
-    Alert.alert("Signup Error", err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      Alert.alert("Success", "Account created!");
+      router.push("/report");
+    } catch (error) {
+      const err = error as { message: string };
+      Alert.alert("Signup Error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Text variant="headlineLarge" style={styles.title}>
-        Join IceRaider
+        Create Your La Migra Account
       </Text>
       <Text variant="bodyMedium" style={styles.subtitle}>
-        Sign up to receive alerts and help others stay safe.
+        Get alerts, report threats, and help keep friends, family, and neighbors safe — privately and anonymously.
       </Text>
 
       <TextInput
-        label="Full Name"
+        label="Username/Nickname"
         value={name}
         onChangeText={setName}
         mode="outlined"
@@ -96,21 +90,11 @@ const handleSignup = async () => {
         style={styles.input}
       />
 
-      <TouchableOpacity
-        style={styles.checkboxRow}
-        onPress={() => setUnderAge(!underAge)}
-      >
-        <View style={styles.checkboxWrapper}>
-          <Checkbox
-            status={underAge ? "checked" : "unchecked"}
-            color="#0d99b6"
-            uncheckedColor="#ffffff"
-          />
-        </View>
-        <Text style={styles.checkboxLabel}>
-          I am under 16 (reporting will be disabled)
-        </Text>
-      </TouchableOpacity>
+      {/* 🔒 Privacy Note */}
+      <Text style={{ fontSize: 12, color: "#777", marginVertical: 10 }}>
+        🔒 We will never share your information.{"\n"}
+        No government access. No tracking. Your safety is our priority.
+      </Text>
 
       <Button
         mode="contained"
@@ -124,14 +108,15 @@ const handleSignup = async () => {
         {loading ? "Signing up..." : "Create Account"}
       </Button>
 
-      <View style={styles.footerLinks}>
-        <Button onPress={() => router.back()} mode="text">
-          ⬅️ Go Back
-        </Button>
-        <Button onPress={() => router.push("/signin")} mode="text">
-          Already have an account? Sign In
-        </Button>
-      </View>
+<View style={styles.footerLinksModern}>
+  <TouchableOpacity onPress={() => router.back()}>
+    <Text style={styles.linkText}>Go Back</Text>
+  </TouchableOpacity>
+  <TouchableOpacity onPress={() => router.push("/signin")}>
+    <Text style={styles.linkText}>Already have an account? Sign In</Text>
+  </TouchableOpacity>
+</View>
+
     </View>
   );
 }

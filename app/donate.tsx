@@ -43,10 +43,11 @@ const DonateScreen = () => {
     <ScrollView contentContainerStyle={{ padding: 20 }}>
       <Card style={{ padding: 20 }}>
         <Text variant="titleLarge" style={{ marginBottom: 10 }}>
-          Support IceRaider
+          Support This App
         </Text>
         <Text variant="bodyMedium" style={{ marginBottom: 20 }}>
-          Your donation helps keep the community informed, safe, and empowered.
+          Your donation helps keep our app running, alerts flowing, and families safe.{"\n"}
+          100% user-funded. Private. Secure. For the people.
         </Text>
 
         <Text variant="titleMedium" style={{ marginBottom: 10 }}>
@@ -96,13 +97,18 @@ const DonateScreen = () => {
           </View>
         </RadioButton.Group>
 
+        {/* 🔒 Privacy Note */}
+        <Text style={{ fontSize: 12, color: '#777', marginTop: 30, marginBottom: 15 }}>
+          🛡️ We don’t store your data or share any of your info.
+        </Text>
+
         <Button
           mode="contained"
           onPress={handleDonate}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 10 }}
           buttonColor={brandColor}
         >
-          Donate Now
+          Protect Lives - Donate Now
         </Button>
       </Card>
     </ScrollView>

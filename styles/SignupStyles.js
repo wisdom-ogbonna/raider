@@ -67,6 +67,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  footerLinksModern: {
+  marginTop: 25,
+  alignItems: "center",
+  gap: 10, // or use `flexDirection: "column"` with `marginBottom`
+},
+
+linkText: {
+  color: "#0d99b6",
+  fontSize: 14,
+  fontWeight: "500",
+  textDecorationLine: "underline",
+},
+
   
 });
 

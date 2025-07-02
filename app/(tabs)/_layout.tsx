@@ -51,6 +51,15 @@ export default function TabLayout() {
             ),
           }}
         />
+                <Tabs.Screen
+          name="RaidMapPage"
+          options={{
+            title: 'map',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="map-outline" size={size} color={color} />
+            ),
+          }}
+        />
       </Tabs>
     </AuthProvider>
   );

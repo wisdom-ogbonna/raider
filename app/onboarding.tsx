@@ -6,21 +6,32 @@ import onboardingStyles from '../styles/HomeScreenStyles';
 
 const onboardingData = [
   {
-    title: 'Welcome to LAMIGRA',
-    description: 'Your trusted ally for reporting and staying informed about ICE raids nearby.',
+    title: 'Welcome',
+    description: 'Your trusted ally for reporting and staying safe from immigration-related threats. 100% anonymous. Built for your protection.',
     image: require('../assets/images/onboarding1.png'),
+  },
+    {
+    title: 'Stay Alert, Stay Safe',
+    description: 'Get real-time alerts when potential immigration enforcement or suspicious activity is reported near you. No personal info needed.No personal info needed.',
+    image: require('../assets/images/onboarding3.png'),
   },
 
   {
-    title: 'Report ICE Activity Fast',
-    description: 'Instantly share details of suspected ICE raids to help protect your community.',
+    title: 'Report Suspicious Activity Fast',
+    description: 'Quickly share details about raids, unmarked vehicles, or threats help protect your friends, family, and neighbors.',
     image: require('../assets/images/onboarding2.png'),
   },
-  {
-    title: 'Stay Alert, Stay Safe',
-    description: 'Get real-time notifications when an ICE raid is reported near your location.',
-    image: require('../assets/images/onboarding3.png'),
+    {
+    title: 'Private. Secure. Anonymous',
+    description: 'No government access. No data sold. Your safety is our priority.',
+    image: require('../assets/images/onboarding2.png'),
   },
+    {
+    title: 'Support the Mission',
+    description: 'Help us grow by donating or spreading the word. La Migra App is free and built by the community, for the community.',
+    image: require('../assets/images/onboarding2.png'),
+  },
+
 ];
 
 const OnboardingScreen = () => {

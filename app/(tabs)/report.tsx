@@ -17,7 +17,7 @@ import { styles } from "../../styles/IceReporter";
 import { startBackgroundLocationUpdates } from "../../utils/backgroundLocationTask.js";
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
-const API_URL = "https://lamigra-backend.onrender.com:5000/api/report-raid"; // Replace with your local IP
+const API_URL = "https://lamigra-backend.onrender.com/api/report-raid"; // Replace with your local IP
 
 const IceReporter = () => {
   const [location, setLocation] = useState(null);
