@@ -1,10 +1,25 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert } from 'react-native';
-import { Avatar, Text, Card, Divider, ActivityIndicator, Button } from 'react-native-paper';
-import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import {
+  Avatar,
+  Text,
+  Card,
+  Divider,
+  ActivityIndicator,
+  Button,
+} from 'react-native-paper';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  doc,
+  getDoc,
+} from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { AuthContext } from '../context/AuthContext';
-import { useRouter } from 'expo-router'; // Navigation
+import { useRouter } from 'expo-router';
 
 const ProfilePage = () => {
   const { user, loading: authLoading, logout } = useContext(AuthContext);
@@ -36,7 +51,10 @@ const ProfilePage = () => {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setUserRaids(data);
       setLoading(false);
     });
@@ -54,25 +72,44 @@ const ProfilePage = () => {
   };
 
   if (loading || authLoading) {
-    return <ActivityIndicator animating={true} size="large" style={styles.loader} />;
+    return (
+      <ActivityIndicator
+        animating={true}
+        size="large"
+        style={styles.loader}
+      />
+    );
   }
+
+  const getInitial = () =>
+    (profile?.name || user.displayName || 'U')[0].toUpperCase();
+
+  const avatarUri = profile?.photoURL || user.photoURL;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileSection}>
-        <Avatar.Image 
-          size={100} 
-          source={{ uri: user.photoURL || 'https://i.pravatar.cc/300' }} 
-        />
+        <View style={styles.avatarWrapper}>
+          {avatarUri ? (
+            <Avatar.Image size={100} source={{ uri: avatarUri }} />
+          ) : (
+            <Avatar.Text size={100} label={getInitial()} />
+          )}
+        </View>
+
         <Text variant="titleLarge" style={styles.displayName}>
           {profile?.name || user.displayName || 'User'}
         </Text>
+
         <Text variant="bodyMedium" style={styles.points}>
           Points: {userRaids.length * 10}
         </Text>
 
-        {/* Logout Button */}
-        <Button mode="outlined" onPress={handleLogout} style={styles.logoutButton}>
+        <Button
+          mode="outlined"
+          onPress={handleLogout}
+          style={styles.logoutButton}
+        >
           Logout
         </Button>
       </View>
@@ -90,9 +127,11 @@ const ProfilePage = () => {
       ) : (
         userRaids.map((raid) => (
           <Card key={raid.id} style={styles.card}>
-            <Card.Title 
-              title={`Reported at ${new Date(raid.createdAt?.toDate()).toLocaleDateString()}`}
-              subtitle={`Address: ${raid.reportedAddress}`} 
+            <Card.Title
+              title={`Reported on ${new Date(
+                raid.createdAt?.toDate()
+              ).toLocaleDateString()}`}
+              subtitle={`Address: ${raid.reportedAddress}`}
             />
             <Card.Content>
               <Text variant="bodyMedium">{raid.description}</Text>
@@ -115,6 +154,16 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: 'center',
     marginBottom: 30,
+  },
+  avatarWrapper: {
+    borderRadius: 50,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    marginBottom: 10,
   },
   displayName: {
     marginTop: 10,

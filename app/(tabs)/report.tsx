@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
-import {
-  View,
-  ScrollView,
-  Alert,
-  StyleSheet,
-  Image,
-} from "react-native";
-import MapView, { Marker, Circle } from "react-native-maps";
+import { View, ScrollView, Alert, StyleSheet, Image } from "react-native";
+import MapView, { Marker, Circle, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
 import * as Linking from "expo-linking";
@@ -15,6 +9,12 @@ import { AuthContext } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { styles } from "../../styles/IceReporter";
 import { startBackgroundLocationUpdates } from "../../utils/backgroundLocationTask.js";
+import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
+import { db } from "../../config/firebase"; // Update path if needed
+import { customMapStyle } from "../../styles/mapStyle"; // adjust the path
+import personAlertIcon from "../../assets/images/person-alert.png";
+
+
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
 const API_URL = "https://lamigra-backend.onrender.com/api/report-raid"; // Replace with your local IP
@@ -36,6 +36,31 @@ const IceReporter = () => {
 
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
+  const [raids, setRaids] = useState([]);
+
+  useEffect(() => {
+    const raidQuery = query(
+      collection(db, "ice_raids"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      raidQuery,
+      (snapshot) => {
+        const raidList = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((raid) => raid.latitude && raid.longitude); // Only include raids with valid location
+
+        setRaids(raidList);
+      },
+      (error) => {
+        console.error("Error fetching raids:", error);
+        Alert.alert("Error", "Failed to load reported raids.");
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -128,7 +153,7 @@ const IceReporter = () => {
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: false,
       quality: 0.7,
       allowsEditing: true,
@@ -186,15 +211,6 @@ const IceReporter = () => {
     }
   };
 
-  const openMaps = () => {
-    if (!location) {
-      Alert.alert("Error", "No location found.");
-      return;
-    }
-    const url = `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`;
-    Linking.openURL(url);
-  };
-
   if (loading) {
     return (
       <ActivityIndicator
@@ -207,8 +223,15 @@ const IceReporter = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={{ height: 250 }}>
-        <MapView style={styles.map} region={region}>
+      <View style={styles.mapWrapper}>
+        <MapView
+          style={styles.map}
+          region={region}
+          customMapStyle={customMapStyle}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+          loadingEnabled
+        >
           {location && (
             <>
               <Marker
@@ -216,17 +239,41 @@ const IceReporter = () => {
                   latitude: location.latitude,
                   longitude: location.longitude,
                 }}
-                title="ICE Raid Location"
+                title="You"
+                description="Your current location"
+                pinColor="dodgerblue"
               />
               <Circle
                 center={location}
                 radius={radius}
-                strokeWidth={1}
-                strokeColor={"rgba(0, 0, 255, 0.5)"}
-                fillColor={"rgba(0, 0, 255, 0.1)"}
+                strokeWidth={2}
+                strokeColor="rgba(30, 144, 255, 0.6)"
+                fillColor="rgba(30, 144, 255, 0.2)"
               />
             </>
           )}
+
+          {raids.map((raid) => (
+            <Marker
+              key={raid.id}
+              coordinate={{
+                latitude: raid.latitude,
+                longitude: raid.longitude,
+              }}
+              title="Reported ICE Raid"
+              description={raid.description}
+              pinColor="crimson"
+            >
+              <Callout>
+                <View style={{ width: 200 }}>
+                  <Text style={{ fontWeight: "bold" }}>
+                    {raid.reportedAddress}
+                  </Text>
+                  <Text>{raid.description}</Text>
+                </View>
+              </Callout>
+            </Marker>
+          ))}
         </MapView>
       </View>
 
@@ -235,44 +282,55 @@ const IceReporter = () => {
         value={address}
         onChangeText={setAddress}
         style={styles.input}
+        mode="outlined"
       />
+
       <Button
         mode="contained"
         onPress={searchAddress}
         loading={searching}
         style={styles.button}
+        contentStyle={styles.buttonContent}
+        labelStyle={styles.buttonLabel}
       >
         Search Location
       </Button>
 
-      {reportedAddress ? (
+      {reportedAddress && (
         <Text style={styles.reportedAddress}>{reportedAddress}</Text>
-      ) : null}
+      )}
 
       <TextInput
         label="Describe the ICE raid..."
         value={description}
         onChangeText={setDescription}
         style={styles.input}
+        multiline
+        mode="outlined"
       />
 
-      <Button mode="contained" onPress={pickImage} style={styles.button}>
+      <Button
+        mode="contained"
+        onPress={pickImage}
+        style={styles.button}
+        contentStyle={styles.buttonContent}
+        labelStyle={styles.buttonLabel}
+      >
         {image ? "Change Image" : "Pick Image (Optional)"}
       </Button>
 
       {image && (
-        <Image
-          source={{ uri: image.uri }}
-          style={{ width: "100%", height: 200, marginVertical: 10, borderRadius: 10 }}
-        />
+        <Image source={{ uri: image.uri }} style={styles.previewImage} />
       )}
 
-      <Button mode="contained" onPress={reportRaid} style={styles.button}>
+      <Button
+        mode="contained"
+        onPress={reportRaid}
+        style={styles.button}
+        contentStyle={styles.buttonContent}
+        labelStyle={styles.buttonLabel}
+      >
         Report ICE Raid
-      </Button>
-
-      <Button mode="contained" onPress={openMaps} style={styles.button}>
-        Open in Maps
       </Button>
     </ScrollView>
   );

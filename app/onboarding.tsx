@@ -24,12 +24,12 @@ const onboardingData = [
     {
     title: 'Private. Secure. Anonymous',
     description: 'No government access. No data sold. Your safety is our priority.',
-    image: require('../assets/images/onboarding2.png'),
+    image: require('../assets/images/onboarding4.png'),
   },
     {
     title: 'Support the Mission',
     description: 'Help us grow by donating or spreading the word. La Migra App is free and built by the community, for the community.',
-    image: require('../assets/images/onboarding2.png'),
+    image: require('../assets/images/onboarding5.png'),
   },
 
 ];
