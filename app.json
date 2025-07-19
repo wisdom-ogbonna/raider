@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.doph574.Iceraider",
       "infoPlist": {
 
-        "UIBackgroundModes": ["location"],
+        "UIBackgroundModes": ["location", "fetch"],
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "App needs location access to show ICE raids nearby.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "App requires location data to function properly.",

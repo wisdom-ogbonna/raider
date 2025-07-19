@@ -21,6 +21,8 @@ import { AuthContext } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 import styles from '../../styles/RaidPageStyles';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
 
 const RaidPage = () => {
   const [raids, setRaids] = useState([]);
@@ -29,6 +31,7 @@ const RaidPage = () => {
   const [commentTexts, setCommentTexts] = useState({});
   const { user, loading: authLoading } = useContext(AuthContext);
   const [commentsByRaid, setCommentsByRaid] = useState({});
+const { t } = useTranslation();
 
   const router = useRouter();
 
@@ -103,13 +106,13 @@ const RaidPage = () => {
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.listContainer}>
-          <Text style={styles.title}>Latest Reports</Text>
+        <Text style={styles.title}>{t('raidPage.latestReports')}</Text>
           {raids.length > 0 ? (
             raids.map((raid) => (
               <View key={raid.id} style={styles.raidItem}>
-                <Text style={styles.raidText}>
-                  <Text style={styles.boldText}>Address: </Text>{raid.reportedAddress}
-                </Text>
+<Text style={styles.raidText}>
+  <Text style={styles.boldText}>{t('raidPage.address')}: </Text>{raid.reportedAddress}
+</Text>
                 <Text style={styles.raidText}>
                   <Text style={styles.boldText}>Description: </Text>{raid.description}
                 </Text>
@@ -128,7 +131,7 @@ const RaidPage = () => {
                     <Text style={styles.commentTitle}>Leave a Comment</Text>
                     <TextInput
                       style={styles.commentInput}
-                      placeholder="Write a comment..."
+                   placeholder={t('raidPage.commentPlaceholder')}
                       value={commentTexts[raid.id] || ''}
                       onChangeText={(text) => handleCommentTextChange(raid.id, text)}
                     />

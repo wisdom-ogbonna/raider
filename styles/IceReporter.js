@@ -2,44 +2,64 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    padding: 12,
+    padding: 16,
+    backgroundColor: '#f9f9f9',
   },
-  mapContainer: {
-    height: '100%',
-    maxHeight: 400,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 16,
+  mapWrapper: {
+    height: 420,
+    marginVertical: 16,
+    borderRadius: 20,
+    overflow: "hidden",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    backgroundColor: "#ffffff",
   },
   map: {
-    width: '100%',
-    height: '100%',
+    flex: 1,
+  },
+  centerPin: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -20,
+    marginTop: -40,
+    zIndex: 10,
   },
   input: {
-    marginVertical: 6,
+    marginVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
   },
   button: {
-    marginVertical: 4,
-    borderRadius: 6,
-     backgroundColor: '#0d99b6'
+    marginVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#0084ff',
+    elevation: 2,
   },
   buttonContent: {
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
   buttonLabel: {
-    fontSize: 12,
+    fontSize: 14,
+    fontWeight: '600',
   },
   reportedAddress: {
     textAlign: 'center',
-    marginVertical: 8,
+    marginVertical: 12,
     fontStyle: 'italic',
-    color: '#333',
+    fontSize: 14,
+    color: '#444',
   },
   previewImage: {
     width: '100%',
-    height: 200,
-    marginVertical: 10,
-    borderRadius: 12,
+    height: 220,
+    marginVertical: 12,
+    borderRadius: 16,
+    borderColor: '#ddd',
+    borderWidth: 1,
   },
   logoutButton: {
     marginTop: 20,
@@ -50,43 +70,25 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
   likeButton: {
-    backgroundColor: '#e0f7fa',
-    padding: 6,
-    borderRadius: 5,
+    backgroundColor: '#d0f0fd',
+    padding: 8,
+    borderRadius: 8,
   },
   reactionRow: {
     flexDirection: 'row',
     gap: 10,
   },
   reactionEmoji: {
-    fontSize: 20,
-    marginHorizontal: 4,
+    fontSize: 22,
+    marginHorizontal: 5,
   },
-
   mapTypeButton: {
-  marginTop: 10,
-  alignSelf: 'center',
-  borderColor: '#0d99b6',
-  borderWidth: 1,
-  borderRadius: 6,
-},
-
-mapWrapper: {
-  height: 400,
-  marginVertical: 16,
-  borderRadius: 16,
-  overflow: "hidden",
-  elevation: 4,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.2,
-  shadowRadius: 4,
-  backgroundColor: "#fff",
-},
-
-map: {
-  flex: 1,
-},
-
-
+    marginTop: 12,
+    alignSelf: 'center',
+    borderColor: '#0084ff',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
 });

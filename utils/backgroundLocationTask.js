@@ -45,8 +45,17 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
 });
 
 export const startBackgroundLocationUpdates = async () => {
-  const { status } = await Location.requestBackgroundPermissionsAsync();
-  if (status !== 'granted') return;
+  const hasStarted = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+  if (hasStarted) {
+    console.log("Background location updates already running.");
+    return;
+  }
+
+  const { status } = await Location.getBackgroundPermissionsAsync();
+  if (status !== 'granted') {
+    console.warn("Background location permission not granted");
+    return;
+  }
 
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
     accuracy: Location.Accuracy.High,
@@ -57,5 +66,10 @@ export const startBackgroundLocationUpdates = async () => {
       notificationTitle: "IceRaider is running",
       notificationBody: "Tracking your location to alert you of nearby ICE raids.",
     },
+    pausesUpdatesAutomatically: false, // ⬅️ Prevents iOS from sleeping the task
+    activityType: Location.ActivityType.OtherNavigation, // ⬅️ Improves reliability
   });
+
+  console.log("Background location updates started.");
 };
+

@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { View, Image } from "react-native";
-import { Button, Banner, Text } from "react-native-paper";
+import { Banner, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { Appbar } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
   const router = useRouter();
   const [bannerVisible, setBannerVisible] = useState(true);
+  const { t } = useTranslation();
 
   return (
     <View style={{ flex: 1 }}>
@@ -34,7 +36,7 @@ const Index = () => {
 
       {/* Body */}
       <View style={{ flex: 1, padding: 20 }}>
-        {/* #LaMigraApp Hashtag */}
+        {/* Hashtag */}
         <Text
           variant="titleSmall"
           style={{
@@ -47,7 +49,7 @@ const Index = () => {
           #LaMigraApp
         </Text>
 
-        {/* 🔥 Banner Announcement */}
+        {/* 🔥 Banner */}
         <Banner
           visible={bannerVisible}
           icon="alert-circle"
@@ -60,7 +62,7 @@ const Index = () => {
           }}
           actions={[
             {
-              label: "Dismiss",
+              label: t("index.dismiss"),
               onPress: () => setBannerVisible(false),
             },
           ]}
@@ -69,10 +71,12 @@ const Index = () => {
             variant="titleMedium"
             style={{ color: "#b45309", fontWeight: "bold", marginBottom: 4 }}
           >
-            🔥 Important alerts, tips, and announcements
+            🔥 {t("index.bannerTitle")}
           </Text>
           <Text variant="bodyMedium" style={{ color: "#78350f" }}>
-            Want to be featured? Use the hashtag <Text style={{ fontWeight: "bold" }}>#LaMigraApp</Text> when posting!
+            {t("index.bannerDescription1")}{" "}
+            <Text style={{ fontWeight: "bold" }}>#LaMigraApp</Text>{" "}
+            {t("index.bannerDescription2")}
           </Text>
         </Banner>
       </View>

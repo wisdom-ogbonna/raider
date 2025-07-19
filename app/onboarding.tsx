@@ -3,41 +3,41 @@ import { View, Text, TouchableOpacity, Image, SafeAreaView } from 'react-native'
 import PagerView from 'react-native-pager-view';
 import { useRouter } from 'expo-router';
 import onboardingStyles from '../styles/HomeScreenStyles';
-
-const onboardingData = [
-  {
-    title: 'Welcome',
-    description: 'Your trusted ally for reporting and staying safe from immigration-related threats. 100% anonymous. Built for your protection.',
-    image: require('../assets/images/onboarding1.png'),
-  },
-    {
-    title: 'Stay Alert, Stay Safe',
-    description: 'Get real-time alerts when potential immigration enforcement or suspicious activity is reported near you. No personal info needed.No personal info needed.',
-    image: require('../assets/images/onboarding3.png'),
-  },
-
-  {
-    title: 'Report Suspicious Activity Fast',
-    description: 'Quickly share details about raids, unmarked vehicles, or threats help protect your friends, family, and neighbors.',
-    image: require('../assets/images/onboarding2.png'),
-  },
-    {
-    title: 'Private. Secure. Anonymous',
-    description: 'No government access. No data sold. Your safety is our priority.',
-    image: require('../assets/images/onboarding4.png'),
-  },
-    {
-    title: 'Support the Mission',
-    description: 'Help us grow by donating or spreading the word. La Migra App is free and built by the community, for the community.',
-    image: require('../assets/images/onboarding5.png'),
-  },
-
-];
+import { useTranslation } from 'react-i18next';
 
 const OnboardingScreen = () => {
   const pagerRef = useRef(null);
   const [pageIndex, setPageIndex] = useState(0);
   const router = useRouter();
+  const { t } = useTranslation();
+
+  const onboardingData = [
+    {
+      title: t('welcome'),
+      description: t('description1'),
+      image: require('../assets/images/onboarding1.png'),
+    },
+    {
+      title: t('stay_safe'),
+      description: t('description2'),
+      image: require('../assets/images/onboarding3.png'),
+    },
+    {
+      title: t('report_fast'),
+      description: t('description3'),
+      image: require('../assets/images/onboarding2.png'),
+    },
+    {
+      title: t('private_secure'),
+      description: t('description4'),
+      image: require('../assets/images/onboarding4.png'),
+    },
+    {
+      title: t('support'),
+      description: t('description5'),
+      image: require('../assets/images/onboarding5.png'),
+    },
+  ];
 
   const handleNext = () => {
     if (pageIndex < onboardingData.length - 1) {
@@ -90,12 +90,12 @@ const OnboardingScreen = () => {
 
       <View style={onboardingStyles.navContainer}>
         <TouchableOpacity onPress={handleSkip}>
-          <Text style={onboardingStyles.skipButton}>Skip</Text>
+          <Text style={onboardingStyles.skipButton}>{t('skip')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleNext} style={onboardingStyles.nextButton}>
           <Text style={onboardingStyles.nextButtonText}>
-            {pageIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
+            {pageIndex === onboardingData.length - 1 ? t('get_started') : t('next')}
           </Text>
         </TouchableOpacity>
       </View>

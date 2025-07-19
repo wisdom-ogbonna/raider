@@ -9,8 +9,10 @@ import {
   RadioButton,
   Divider
 } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 
 const DonateScreen = () => {
+  const { t } = useTranslation();
   const [selectedAmount, setSelectedAmount] = useState('10');
   const [customAmount, setCustomAmount] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
@@ -20,10 +22,15 @@ const DonateScreen = () => {
 
   const handleDonate = () => {
     const amount = customAmount || selectedAmount;
-    alert(`Thank you for donating $${amount}${isRecurring ? ' monthly' : ''}!`);
+    alert(
+      t('donate.thankYou', {
+        amount,
+        recurring: isRecurring ? t('donate.recurringText') : ''
+      })
+    );
   };
 
-  const renderAmountButton = (amount: string) => (
+  const renderAmountButton = (amount) => (
     <Button
       key={amount}
       mode={selectedAmount === amount ? 'contained' : 'outlined'}
@@ -43,22 +50,23 @@ const DonateScreen = () => {
     <ScrollView contentContainerStyle={{ padding: 20 }}>
       <Card style={{ padding: 20 }}>
         <Text variant="titleLarge" style={{ marginBottom: 10 }}>
-          Support This App
+          {t('donate.supportTitle')}
         </Text>
+
         <Text variant="bodyMedium" style={{ marginBottom: 20 }}>
-          Your donation helps keep our app running, alerts flowing, and families safe.{"\n"}
-          100% user-funded. Private. Secure. For the people.
+          {t('donate.supportMessage')}
         </Text>
 
         <Text variant="titleMedium" style={{ marginBottom: 10 }}>
-          Select Amount
+          {t('donate.selectAmount')}
         </Text>
+
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10 }}>
           {['5', '10', '25', '50'].map(renderAmountButton)}
         </View>
 
         <TextInput
-          label="Or enter custom amount"
+          label={t('donate.customAmountLabel')}
           value={customAmount}
           onChangeText={setCustomAmount}
           keyboardType="numeric"
@@ -75,31 +83,34 @@ const DonateScreen = () => {
             onValueChange={setIsRecurring}
             color={brandColor}
           />
-          <Text style={{ marginLeft: 10 }}>Make this a monthly donation</Text>
+          <Text style={{ marginLeft: 10 }}>
+            {t('donate.monthlyToggle')}
+          </Text>
         </View>
 
         <Divider style={{ marginBottom: 20 }} />
 
         <Text variant="titleMedium" style={{ marginBottom: 10 }}>
-          Payment Method
+          {t('donate.paymentMethod')}
         </Text>
+
         <RadioButton.Group
           onValueChange={value => setPaymentMethod(value)}
           value={paymentMethod}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <RadioButton value="card" color={brandColor} />
-            <Text>Credit / Debit Card</Text>
+            <Text>{t('donate.card')}</Text>
           </View>
+
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <RadioButton value="paypal" color={brandColor} />
-            <Text>PayPal</Text>
+            <Text>{t('donate.paypal')}</Text>
           </View>
         </RadioButton.Group>
 
-        {/* 🔒 Privacy Note */}
         <Text style={{ fontSize: 12, color: '#777', marginTop: 30, marginBottom: 15 }}>
-          🛡️ We don’t store your data or share any of your info.
+          {t('donate.privacyNote')}
         </Text>
 
         <Button
@@ -108,7 +119,7 @@ const DonateScreen = () => {
           style={{ marginTop: 10 }}
           buttonColor={brandColor}
         >
-          Protect Lives - Donate Now
+          {t('donate.donateButton')}
         </Button>
       </Card>
     </ScrollView>
