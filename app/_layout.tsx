@@ -54,10 +54,7 @@ export default function RootLayout() {
 
         {/* Auth Screens */}
         <Stack.Screen name="signin" options={{ headerTitle: "Sign In" }} />
-        <Stack.Screen
-          name="signup"
-          options={{ headerTitle: "Sign Up" }}
-        />
+        <Stack.Screen name="signup" options={{ headerTitle: "Sign Up" }} />
         <Stack.Screen
           name="PhoneVerificationScreen"
           options={{ headerShown: false }}
@@ -69,8 +66,10 @@ export default function RootLayout() {
           options={{
             headerTitle: "Donate",
             headerBackTitle: "Back",
+             headerShown: false
           }}
         />
+        <Stack.Screen name="profile" options={{ headerShown: false }} />
 
         {/* Not Found */}
         <Stack.Screen name="+not-found" />

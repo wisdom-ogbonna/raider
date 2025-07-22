@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet, Alert, Image } from 'react-native';
 import {
   Avatar,
   Text,
@@ -7,6 +7,7 @@ import {
   Divider,
   ActivityIndicator,
   Button,
+  Appbar,
 } from 'react-native-paper';
 import {
   collection,
@@ -28,8 +29,15 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const router = useRouter();
 
+  // Redirect anonymous users to /signup
   useEffect(() => {
-    if (!user || authLoading) return;
+    if (!authLoading && user?.isAnonymous) {
+      router.replace('/signup');
+    }
+  }, [user, authLoading]);
+
+  useEffect(() => {
+    if (!user || authLoading || user.isAnonymous) return;
 
     const fetchUserProfile = async () => {
       try {
@@ -73,11 +81,7 @@ const ProfilePage = () => {
 
   if (loading || authLoading) {
     return (
-      <ActivityIndicator
-        animating={true}
-        size="large"
-        style={styles.loader}
-      />
+      <ActivityIndicator animating={true} size="large" style={styles.loader} />
     );
   }
 
@@ -87,59 +91,82 @@ const ProfilePage = () => {
   const avatarUri = profile?.photoURL || user.photoURL;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.profileSection}>
-        <View style={styles.avatarWrapper}>
-          {avatarUri ? (
-            <Avatar.Image size={100} source={{ uri: avatarUri }} />
-          ) : (
-            <Avatar.Text size={100} label={getInitial()} />
-          )}
+    <>
+      <Appbar.Header>
+        <Appbar.Content
+          title={
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <Image
+                source={require('../assets/images/logo.png')}
+                style={{ width: 120, height: 120, marginLeft: 15 }}
+              />
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-start' }}>
+                <Text variant="headlineMedium" style={{ color: 'white' }}>
+                  LAMIGRA
+                </Text>
+              </View>
+            </View>
+          }
+        />
+        <Appbar.Action icon="home" onPress={() => router.push('/')} />
+        <Appbar.Action icon="hand-heart" onPress={() => router.push('/donate')} />
+        <Appbar.Action icon="account" onPress={() => router.push('/profile')} />
+      </Appbar.Header>
+
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.profileSection}>
+          <View style={styles.avatarWrapper}>
+            {avatarUri ? (
+              <Avatar.Image size={100} source={{ uri: avatarUri }} />
+            ) : (
+              <Avatar.Text size={100} label={getInitial()} />
+            )}
+          </View>
+
+          <Text variant="titleLarge" style={styles.displayName}>
+            {profile?.name || user.displayName || 'User'}
+          </Text>
+
+          <Text variant="bodyMedium" style={styles.points}>
+            Points: {userRaids.length * 10}
+          </Text>
+
+          <Button
+            mode="outlined"
+            onPress={handleLogout}
+            style={styles.logoutButton}
+          >
+            Logout
+          </Button>
         </View>
 
-        <Text variant="titleLarge" style={styles.displayName}>
-          {profile?.name || user.displayName || 'User'}
+        <Divider style={styles.divider} />
+
+        <Text variant="titleMedium" style={styles.sectionTitle}>
+          Your Reports
         </Text>
 
-        <Text variant="bodyMedium" style={styles.points}>
-          Points: {userRaids.length * 10}
-        </Text>
-
-        <Button
-          mode="outlined"
-          onPress={handleLogout}
-          style={styles.logoutButton}
-        >
-          Logout
-        </Button>
-      </View>
-
-      <Divider style={styles.divider} />
-
-      <Text variant="titleMedium" style={styles.sectionTitle}>
-        Your Reports
-      </Text>
-
-      {userRaids.length === 0 ? (
-        <Text variant="bodyMedium" style={styles.emptyText}>
-          You haven't reported any raids yet.
-        </Text>
-      ) : (
-        userRaids.map((raid) => (
-          <Card key={raid.id} style={styles.card}>
-            <Card.Title
-              title={`Reported on ${new Date(
-                raid.createdAt?.toDate()
-              ).toLocaleDateString()}`}
-              subtitle={`Address: ${raid.reportedAddress}`}
-            />
-            <Card.Content>
-              <Text variant="bodyMedium">{raid.description}</Text>
-            </Card.Content>
-          </Card>
-        ))
-      )}
-    </ScrollView>
+        {userRaids.length === 0 ? (
+          <Text variant="bodyMedium" style={styles.emptyText}>
+            You haven't reported any raids yet.
+          </Text>
+        ) : (
+          userRaids.map((raid) => (
+            <Card key={raid.id} style={styles.card}>
+              <Card.Title
+                title={`Reported on ${new Date(
+                  raid.createdAt?.toDate()
+                ).toLocaleDateString()}`}
+                subtitle={`Address: ${raid.reportedAddress}`}
+              />
+              <Card.Content>
+                <Text variant="bodyMedium">{raid.description}</Text>
+              </Card.Content>
+            </Card>
+          ))
+        )}
+      </ScrollView>
+    </>
   );
 };
 

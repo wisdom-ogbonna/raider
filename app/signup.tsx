@@ -21,9 +21,12 @@ export default function Signup() {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) router.push("/report");
-  }, [user]);
+useEffect(() => {
+  if (user && !user.isAnonymous) {
+    router.push("/report");
+  }
+}, [user]);
+
 
   const validateInputs = () => {
     if (!name || !email || !password) {

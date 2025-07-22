@@ -48,7 +48,7 @@ const OnboardingScreen = () => {
   };
 
   const handleSkip = () => {
-    router.replace('/signup');
+    router.replace('/report');
   };
 
   const onPageSelected = (e) => {

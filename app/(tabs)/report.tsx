@@ -57,9 +57,9 @@ const IceReporter = () => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!loading && !user) router.replace("/signin");
-  }, [user, loading]);
+  // useEffect(() => {
+  //   if (!loading && !user) router.replace("/signin");
+  // }, [user, loading]);
 
   useEffect(() => {
     (async () => {
