@@ -21,6 +21,7 @@ import {
 import { db } from '../config/firebase';
 import { AuthContext } from '../context/AuthContext';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 const ProfilePage = () => {
   const { user, loading: authLoading, logout } = useContext(AuthContext);
@@ -28,6 +29,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const router = useRouter();
+  const { t, i18n } = useTranslation();
 
   // Redirect anonymous users to /signup
   useEffect(() => {
@@ -79,16 +81,20 @@ const ProfilePage = () => {
     }
   };
 
+  const getInitial = () =>
+    (profile?.name || user.displayName || 'U')[0].toUpperCase();
+
+  const avatarUri = profile?.photoURL || user.photoURL;
+
+  const changeLanguage = (lang) => {
+    i18n.changeLanguage(lang);
+  };
+
   if (loading || authLoading) {
     return (
       <ActivityIndicator animating={true} size="large" style={styles.loader} />
     );
   }
-
-  const getInitial = () =>
-    (profile?.name || user.displayName || 'U')[0].toUpperCase();
-
-  const avatarUri = profile?.photoURL || user.photoURL;
 
   return (
     <>
@@ -128,7 +134,7 @@ const ProfilePage = () => {
           </Text>
 
           <Text variant="bodyMedium" style={styles.points}>
-            Points: {userRaids.length * 10}
+            {t('profile.points')}: {userRaids.length * 10}
           </Text>
 
           <Button
@@ -136,28 +142,38 @@ const ProfilePage = () => {
             onPress={handleLogout}
             style={styles.logoutButton}
           >
-            Logout
+            {t('profile.logout')}
           </Button>
+
+          {/* Language Switch */}
+          <View style={styles.langSwitch}>
+            <Button mode="outlined" onPress={() => changeLanguage('en')} style={{ marginRight: 10 }}>
+              English
+            </Button>
+            <Button mode="outlined" onPress={() => changeLanguage('es')}>
+              Español
+            </Button>
+          </View>
         </View>
 
         <Divider style={styles.divider} />
 
         <Text variant="titleMedium" style={styles.sectionTitle}>
-          Your Reports
+          {t('profile.yourReports')}
         </Text>
 
         {userRaids.length === 0 ? (
           <Text variant="bodyMedium" style={styles.emptyText}>
-            You haven't reported any raids yet.
+            {t('profile.noReports')}
           </Text>
         ) : (
           userRaids.map((raid) => (
             <Card key={raid.id} style={styles.card}>
               <Card.Title
-                title={`Reported on ${new Date(
+                title={`${t('profile.reportedOn')} ${new Date(
                   raid.createdAt?.toDate()
                 ).toLocaleDateString()}`}
-                subtitle={`Address: ${raid.reportedAddress}`}
+                subtitle={`${t('profile.address')}: ${raid.reportedAddress}`}
               />
               <Card.Content>
                 <Text variant="bodyMedium">{raid.description}</Text>
@@ -205,6 +221,10 @@ const styles = StyleSheet.create({
     borderColor: '#ff4444',
     borderWidth: 1,
     width: '50%',
+  },
+  langSwitch: {
+    flexDirection: 'row',
+    marginTop: 15,
   },
   divider: {
     marginBottom: 20,

@@ -33,10 +33,10 @@
   "iceReporter": {
     "enterLocation": "Ingrese la ubicación...",
     "searchLocation": "Buscar ubicación",
-    "describeRaid": "Describa la redada de ICE...",
-    "pickImage": "Seleccionar imagen (opcional)",
+    "describeRaid": "descripción",
+    "pickImage": "subir imagen (opcional)",
     "changeImage": "Cambiar imagen",
-    "reportRaid": "Reportar redada de ICE",
+    "reportRaid": "Enviar este informe",
     "raidMarkerTitle": "Redada de ICE reportada",
     "dragToCorrect": "Arrastre para corregir la ubicación",
     "selectedAddress": "Área seleccionada",
@@ -79,7 +79,7 @@
     "card": "Tarjeta de Crédito / Débito",
     "paypal": "PayPal",
     "privacyNote": "🛡️ No almacenamos ni compartimos tu información.",
-    "donateButton": "Protege vidas - Dona ahora",
+    "donateButton": "Protege a las Familias - Dona Ahora",
     "thankYou": "¡Gracias por donar ${{amount}}{{recurring}}!",
     "recurringText": " mensualmente"
   }

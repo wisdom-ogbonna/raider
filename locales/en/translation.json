@@ -34,10 +34,10 @@
   "iceReporter": {
     "enterLocation": "Enter location...",
     "searchLocation": "Search Location",
-    "describeRaid": "Describe the ICE raid...",
-    "pickImage": "Pick Image (Optional)",
+    "describeRaid": "Description",
+    "pickImage": "upload image (optional)",
     "changeImage": "Change Image",
-    "reportRaid": "Report ICE Raid",
+    "reportRaid": "Submit this Report",
     "raidMarkerTitle": "Reported ICE Raid",
     "dragToCorrect": "Drag to correct location",
     "selectedAddress": "Selected address",
@@ -80,7 +80,7 @@
     "card": "Credit / Debit Card",
     "paypal": "PayPal",
     "privacyNote": "🛡️ We don’t store your data or share any of your info.",
-    "donateButton": "Protect Lives - Donate Now",
+    "donateButton": "Protect Families - Donate Now",
     "thankYou": "Thank you for donating ${{amount}}{{recurring}}!",
     "recurringText": " monthly"
   }
