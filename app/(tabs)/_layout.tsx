@@ -33,7 +33,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="report"
           options={{
-            title: "Report",
+            title: "Maps",
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="alert-circle-outline" size={size} color={color} />
             ),
@@ -50,7 +50,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="raids"
           options={{
-            title: "Raids",
+            title: "Reports",
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="skull-outline" size={size} color={color} />
             ),

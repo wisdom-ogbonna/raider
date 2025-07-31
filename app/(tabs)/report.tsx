@@ -131,61 +131,62 @@ const IceReporter = () => {
     if (!result.canceled) setImage(result.assets[0]);
   };
 
-const reportRaid = async () => {
-  if (!reportedAddress || !location) {
-    Alert.alert(t("iceReporter.error"), t("iceReporter.locationMissing"));
-    return;
-  }
-  try {
-    const token = await user.getIdToken();
-    const formData = new FormData();
-    formData.append("description", description);
-    formData.append("latitude", location.latitude);
-    formData.append("longitude", location.longitude);
-    formData.append("radius", radius);
-    formData.append("reportedAddress", reportedAddress);
+  const reportRaid = async () => {
+    if (!reportedAddress || !location) {
+      Alert.alert(t("iceReporter.error"), t("iceReporter.locationMissing"));
+      return;
+    }
+    try {
+      const token = await user.getIdToken();
+      const formData = new FormData();
+      formData.append("description", description);
+      formData.append("latitude", location.latitude);
+      formData.append("longitude", location.longitude);
+      formData.append("radius", radius);
+      formData.append("reportedAddress", reportedAddress);
 
-    if (image) {
-      const localUri = image.uri;
-      const filename = localUri.split("/").pop();
-      const match = /\.(\w+)$/.exec(filename ?? "");
-      const type = match ? `image/${match[1]}` : `image`;
+      if (image) {
+        const localUri = image.uri;
+        const filename = localUri.split("/").pop();
+        const match = /\.(\w+)$/.exec(filename ?? "");
+        const type = match ? `image/${match[1]}` : `image`;
 
-      // On iOS, uri must start with file://
-      const correctedUri =
-        Platform.OS === "android" ? localUri : localUri.replace("file://", "file:///");
+        // On iOS, uri must start with file://
+        const correctedUri =
+          Platform.OS === "android"
+            ? localUri
+            : localUri.replace("file://", "file:///");
 
-      formData.append("file", {
-        uri: correctedUri,
-        name: filename,
-        type,
+        formData.append("file", {
+          uri: correctedUri,
+          name: filename,
+          type,
+        });
+      }
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // ❌ DO NOT manually set "Content-Type"
+        },
+        body: formData,
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Upload failed");
+      }
+
+      await response.json();
+      Alert.alert(t("iceReporter.success"), t("iceReporter.raidReported"));
+      setDescription("");
+      setImage(null);
+    } catch (error) {
+      console.error("Upload error:", error);
+      Alert.alert(t("iceReporter.error"), error.message);
     }
-
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // ❌ DO NOT manually set "Content-Type"
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || "Upload failed");
-    }
-
-    await response.json();
-    Alert.alert(t("iceReporter.success"), t("iceReporter.raidReported"));
-    setDescription("");
-    setImage(null);
-  } catch (error) {
-    console.error("Upload error:", error);
-    Alert.alert(t("iceReporter.error"), error.message);
-  }
-};
-
+  };
 
   if (loading)
     return (
@@ -234,6 +235,18 @@ const reportRaid = async () => {
                     {raid.reportedAddress}
                   </Text>
                   <Text>{raid.description}</Text>
+                  {raid.imageUrl && (
+                    <Image
+                      source={{ uri: raid.imageUrl }}
+                      style={{
+                        width: 180,
+                        height: 100,
+                        marginTop: 5,
+                        borderRadius: 8,
+                      }}
+                      resizeMode="cover"
+                    />
+                  )}
                 </View>
               </Callout>
             </Marker>
