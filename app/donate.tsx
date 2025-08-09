@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, ScrollView } from "react-native";
+import {
+  View,
+  ScrollView,
+  Linking,
+  Alert,
+  Image as RNImage,
+} from "react-native";
 import {
   Text,
   Button,
@@ -8,30 +14,53 @@ import {
   Switch,
   RadioButton,
   Divider,
+  Appbar,
+  ActivityIndicator,
 } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { Appbar } from "react-native-paper";
-import { Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import axios from "axios";
 
 const DonateScreen = () => {
   const { t } = useTranslation();
+  const navigation = useNavigation();
+  const brandColor = "#0d99b6";
+
   const [selectedAmount, setSelectedAmount] = useState("10");
   const [customAmount, setCustomAmount] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const navigation = useNavigation();
+  const [paymentMethod, setPaymentMethod] = useState("paypal");
+  const [loading, setLoading] = useState(false);
 
-  const brandColor = "#0d99b6";
-
-  const handleDonate = () => {
+  const handleDonate = async () => {
     const amount = customAmount || selectedAmount;
-    alert(
-      t("donate.thankYou", {
-        amount,
-        recurring: isRecurring ? t("donate.recurringText") : "",
-      })
-    );
+    if (!amount) {
+      Alert.alert("Error", "Please enter or select a donation amount.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        "https://lamigra-backend.onrender.com/api/donate",
+        {
+          amount,
+          currency: "USD",
+        }
+      );
+
+      const approveLink = response.data.approveLink;
+      if (approveLink) {
+        Linking.openURL(approveLink);
+      } else {
+        Alert.alert("Error", "Unable to retrieve PayPal approval link.");
+      }
+    } catch (error) {
+      console.error("Donation Error:", error.message);
+      Alert.alert("Error", "Donation failed. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderAmountButton = (amount) => (
@@ -58,7 +87,7 @@ const DonateScreen = () => {
             <View
               style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
             >
-              <Image
+              <RNImage
                 source={require("../assets/images/logo.png")}
                 style={{ width: 120, height: 120, marginLeft: 15 }}
               />
@@ -77,14 +106,8 @@ const DonateScreen = () => {
           }
         />
         <Appbar.Action icon="home" onPress={() => navigation.navigate("(tabs)")} />
-        <Appbar.Action
-          icon="hand-heart"
-          onPress={() => navigation.navigate("donate")}
-        />
-        <Appbar.Action
-          icon="account"
-          onPress={() => navigation.navigate("profile")}
-        />
+        <Appbar.Action icon="hand-heart" onPress={() => navigation.navigate("donate")} />
+        <Appbar.Action icon="account" onPress={() => navigation.navigate("profile")} />
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -119,13 +142,7 @@ const DonateScreen = () => {
             onFocus={() => setSelectedAmount("")}
           />
 
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 20,
-            }}
-          >
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
             <Switch
               value={isRecurring}
               onValueChange={setIsRecurring}
@@ -171,8 +188,9 @@ const DonateScreen = () => {
             onPress={handleDonate}
             style={{ marginTop: 10 }}
             buttonColor={brandColor}
+            disabled={loading}
           >
-            {t("donate.donateButton")}
+            {loading ? <ActivityIndicator color="white" /> : t("donate.donateButton")}
           </Button>
         </Card>
       </ScrollView>

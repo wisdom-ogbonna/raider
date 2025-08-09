@@ -2,7 +2,14 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { View, ScrollView, Alert, StyleSheet, Image } from "react-native";
 import MapView, { Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
-import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
+import {
+  TextInput,
+  Button,
+  Text,
+  ActivityIndicator,
+  Menu,
+} from "react-native-paper";
+
 import * as ImagePicker from "expo-image-picker";
 import { AuthContext } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -34,7 +41,20 @@ const IceReporter = () => {
   const router = useRouter();
   const [raids, setRaids] = useState([]);
   const mapRef = useRef(null);
+  const [category, setCategory] = useState("sos");
+
   const { t } = useTranslation();
+
+  const categoryOptions = [
+    { label: "SOS - Getting Detained", value: "sos" },
+    { label: "Suspicious Vehicle", value: "suspicious" },
+    { label: "Checkpoint / Roadblock", value: "checkpoint" },
+    { label: "ICE Agents on sight", value: "ice_agents" },
+    { label: "Reports from others (second hand info)", value: "second_hand" },
+  ];
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(categoryOptions[0]);
 
   useEffect(() => {
     const raidQuery = query(
@@ -144,6 +164,7 @@ const IceReporter = () => {
       formData.append("longitude", location.longitude);
       formData.append("radius", radius);
       formData.append("reportedAddress", reportedAddress);
+      formData.append("category", selectedCategory.value);
 
       if (image) {
         const localUri = image.uri;
@@ -286,6 +307,48 @@ const IceReporter = () => {
         multiline
         mode="outlined"
       />
+
+      {/* Category Dropdown */}
+<View style={styles.categoryContainer}>
+  <Text style={styles.categoryLabel}>Category</Text>
+  <Button
+    mode="outlined"
+    onPress={() => setMenuVisible(true)}
+    style={styles.categoryButton}
+    contentStyle={styles.categoryButtonContent}
+    labelStyle={styles.categoryButtonLabel}
+  >
+    {selectedCategory.label}
+  </Button>
+
+  <Menu
+    visible={menuVisible}
+    onDismiss={() => setMenuVisible(false)}
+    anchor={{ x: 0, y: 0 }}
+    style={styles.categoryMenu}
+  >
+    {categoryOptions.map((option) => (
+      <Menu.Item
+        key={option.value}
+        onPress={() => {
+          setSelectedCategory(option);
+          setCategory(option.value);
+          setMenuVisible(false);
+        }}
+        title={option.label}
+        titleStyle={[
+          styles.menuItemTitle,
+          option.value === selectedCategory.value && styles.menuItemTitleSelected,
+        ]}
+        style={[
+          styles.menuItem,
+          option.value === selectedCategory.value && styles.menuItemSelected,
+        ]}
+      />
+    ))}
+  </Menu>
+</View>
+
 
       {/* Pick Image */}
       <Button

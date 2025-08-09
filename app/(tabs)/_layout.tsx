@@ -35,7 +35,7 @@ export default function TabLayout() {
           options={{
             title: "Maps",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="alert-circle-outline" size={size} color={color} />
+              <Ionicons name="warning-outline" size={size} color={color} />
             ),
           }}
           listeners={({ navigation }) => ({
@@ -52,7 +52,7 @@ export default function TabLayout() {
           options={{
             title: "Reports",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="skull-outline" size={size} color={color} />
+              <Ionicons name="document-text-outline" size={size} color={color} />
             ),
           }}
         />

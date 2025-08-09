@@ -9,13 +9,13 @@ export const styles = StyleSheet.create({
     height: 420,
     marginVertical: 16,
     borderRadius: 20,
-    overflow: "hidden",
+    overflow: 'hidden',
     elevation: 6,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
   },
   map: {
     flex: 1,
@@ -90,5 +90,51 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
+  },
+
+  // Category dropdown styles
+  categoryContainer: {
+    marginHorizontal: 10,
+    marginTop: 10,
+  },
+  categoryLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  categoryButton: {
+    borderColor: '#2196F3',
+    borderWidth: 1.5,
+    borderRadius: 12,
+    justifyContent: 'flex-start',
+  },
+  categoryButtonContent: {
+    justifyContent: 'flex-start',
+    height: 50,
+  },
+  categoryButtonLabel: {
+    color: '#2196F3',
+    fontSize: 16,
+  },
+  categoryMenu: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 10,
+    marginHorizontal: 10,
+    elevation: 3,
+  },
+  menuItem: {
+    backgroundColor: 'transparent',
+  },
+  menuItemSelected: {
+    backgroundColor: '#E3F2FD',
+  },
+  menuItemTitle: {
+    color: '#333',
+    fontWeight: 'normal',
+  },
+  menuItemTitleSelected: {
+    color: '#2196F3',
+    fontWeight: 'bold',
   },
 });

@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../i18n"; // Load translations before anything else
 import i18n from "../i18n";
+import { Provider as PaperProvider,MD3LightTheme } from "react-native-paper";
 
 export default function RootLayout() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function RootLayout() {
   }, []);
 
   return (
+     <PaperProvider theme={MD3LightTheme}>
     <AuthProvider>
       <Stack>
         {/* Language Selection Screen */}
@@ -75,5 +77,6 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" />
       </Stack>
     </AuthProvider>
+    </PaperProvider>
   );
 }
