@@ -88,7 +88,7 @@ const DonateScreen = () => {
               style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
             >
               <RNImage
-                source={require("../assets/images/logo.png")}
+                source={require("../../assets/images/logo.png")}
                 style={{ width: 120, height: 120, marginLeft: 15 }}
               />
               <View
@@ -105,9 +105,18 @@ const DonateScreen = () => {
             </View>
           }
         />
-        <Appbar.Action icon="home" onPress={() => navigation.navigate("(tabs)")} />
-        <Appbar.Action icon="hand-heart" onPress={() => navigation.navigate("donate")} />
-        <Appbar.Action icon="account" onPress={() => navigation.navigate("profile")} />
+        <Appbar.Action
+          icon="home"
+          onPress={() => navigation.navigate("(tabs)")}
+        />
+        <Appbar.Action
+          icon="hand-heart"
+          onPress={() => navigation.navigate("donate")}
+        />
+        <Appbar.Action
+          icon="account"
+          onPress={() => navigation.navigate("profile")}
+        />
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -142,7 +151,13 @@ const DonateScreen = () => {
             onFocus={() => setSelectedAmount("")}
           />
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 20,
+            }}
+          >
             <Switch
               value={isRecurring}
               onValueChange={setIsRecurring}
@@ -190,7 +205,11 @@ const DonateScreen = () => {
             buttonColor={brandColor}
             disabled={loading}
           >
-            {loading ? <ActivityIndicator color="white" /> : t("donate.donateButton")}
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              t("donate.donateButton")
+            )}
           </Button>
         </Card>
       </ScrollView>

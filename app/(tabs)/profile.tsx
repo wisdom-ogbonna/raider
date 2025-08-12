@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert, Image } from 'react-native';
+import React, { useContext, useEffect, useState } from "react";
+import { View, ScrollView, StyleSheet, Alert, Image } from "react-native";
 import {
   Avatar,
   Text,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Button,
   Appbar,
-} from 'react-native-paper';
+} from "react-native-paper";
 import {
   collection,
   query,
@@ -17,11 +17,11 @@ import {
   onSnapshot,
   doc,
   getDoc,
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
-import { AuthContext } from '../context/AuthContext';
-import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
+} from "firebase/firestore";
+import { db } from "../../config/firebase";
+import { AuthContext } from "../../context/AuthContext";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const ProfilePage = () => {
   const { user, loading: authLoading, logout } = useContext(AuthContext);
@@ -34,7 +34,7 @@ const ProfilePage = () => {
   // Redirect anonymous users to /signup
   useEffect(() => {
     if (!authLoading && user?.isAnonymous) {
-      router.replace('/signup');
+      router.replace("/signup");
     }
   }, [user, authLoading]);
 
@@ -43,21 +43,21 @@ const ProfilePage = () => {
 
     const fetchUserProfile = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           setProfile(userDoc.data());
         }
       } catch (error) {
-        console.error('Error fetching user profile:', error);
+        console.error("Error fetching user profile:", error);
       }
     };
 
     fetchUserProfile();
 
     const q = query(
-      collection(db, 'ice_raids'),
-      where('reportedBy', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      collection(db, "ice_raids"),
+      where("reportedBy", "==", user.uid),
+      orderBy("createdAt", "desc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -75,14 +75,14 @@ const ProfilePage = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      router.replace('/signin');
+      router.replace("/signin");
     } catch (error) {
-      Alert.alert('Error', 'Logout failed. Please try again.');
+      Alert.alert("Error", "Logout failed. Please try again.");
     }
   };
 
   const getInitial = () =>
-    (profile?.name || user.displayName || 'U')[0].toUpperCase();
+    (profile?.name || user.displayName || "U")[0].toUpperCase();
 
   const avatarUri = profile?.photoURL || user.photoURL;
 
@@ -101,22 +101,33 @@ const ProfilePage = () => {
       <Appbar.Header>
         <Appbar.Content
           title={
-            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
               <Image
-                source={require('../assets/images/logo.png')}
+                source={require("../../assets/images/logo.png")}
                 style={{ width: 120, height: 120, marginLeft: 15 }}
               />
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-start' }}>
-                <Text variant="headlineMedium" style={{ color: 'white' }}>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Text variant="headlineMedium" style={{ color: "white" }}>
                   LAMIGRA
                 </Text>
               </View>
             </View>
           }
         />
-        <Appbar.Action icon="home" onPress={() => router.push('/')} />
-        <Appbar.Action icon="hand-heart" onPress={() => router.push('/donate')} />
-        <Appbar.Action icon="account" onPress={() => router.push('/profile')} />
+        <Appbar.Action icon="home" onPress={() => router.push("/")} />
+        <Appbar.Action
+          icon="hand-heart"
+          onPress={() => router.push("/donate")}
+        />
+        <Appbar.Action icon="account" onPress={() => router.push("/profile")} />
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.container}>
@@ -130,11 +141,11 @@ const ProfilePage = () => {
           </View>
 
           <Text variant="titleLarge" style={styles.displayName}>
-            {profile?.name || user.displayName || 'User'}
+            {profile?.name || user.displayName || "User"}
           </Text>
 
           <Text variant="bodyMedium" style={styles.points}>
-            {t('profile.points')}: {userRaids.length * 10}
+            {t("profile.points")}: {userRaids.length * 10}
           </Text>
 
           <Button
@@ -142,15 +153,19 @@ const ProfilePage = () => {
             onPress={handleLogout}
             style={styles.logoutButton}
           >
-            {t('profile.logout')}
+            {t("profile.logout")}
           </Button>
 
           {/* Language Switch */}
           <View style={styles.langSwitch}>
-            <Button mode="outlined" onPress={() => changeLanguage('en')} style={{ marginRight: 10 }}>
+            <Button
+              mode="outlined"
+              onPress={() => changeLanguage("en")}
+              style={{ marginRight: 10 }}
+            >
               English
             </Button>
-            <Button mode="outlined" onPress={() => changeLanguage('es')}>
+            <Button mode="outlined" onPress={() => changeLanguage("es")}>
               Español
             </Button>
           </View>
@@ -159,21 +174,21 @@ const ProfilePage = () => {
         <Divider style={styles.divider} />
 
         <Text variant="titleMedium" style={styles.sectionTitle}>
-          {t('profile.yourReports')}
+          {t("profile.yourReports")}
         </Text>
 
         {userRaids.length === 0 ? (
           <Text variant="bodyMedium" style={styles.emptyText}>
-            {t('profile.noReports')}
+            {t("profile.noReports")}
           </Text>
         ) : (
           userRaids.map((raid) => (
             <Card key={raid.id} style={styles.card}>
               <Card.Title
-                title={`${t('profile.reportedOn')} ${new Date(
+                title={`${t("profile.reportedOn")} ${new Date(
                   raid.createdAt?.toDate()
                 ).toLocaleDateString()}`}
-                subtitle={`${t('profile.address')}: ${raid.reportedAddress}`}
+                subtitle={`${t("profile.address")}: ${raid.reportedAddress}`}
               />
               <Card.Content>
                 <Text variant="bodyMedium">{raid.description}</Text>
@@ -189,20 +204,20 @@ const ProfilePage = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   loader: {
     marginTop: 100,
   },
   profileSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
   },
   avatarWrapper: {
     borderRadius: 50,
-    overflow: 'hidden',
+    overflow: "hidden",
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -210,38 +225,38 @@ const styles = StyleSheet.create({
   },
   displayName: {
     marginTop: 10,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   points: {
-    color: '#777',
+    color: "#777",
     marginTop: 4,
   },
   logoutButton: {
     marginTop: 15,
-    borderColor: '#ff4444',
+    borderColor: "#ff4444",
     borderWidth: 1,
-    width: '50%',
+    width: "50%",
   },
   langSwitch: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 15,
   },
   divider: {
     marginBottom: 20,
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
   },
   sectionTitle: {
     marginBottom: 10,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 20,
-    color: '#999',
+    color: "#999",
   },
   card: {
     marginBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     elevation: 2,
   },

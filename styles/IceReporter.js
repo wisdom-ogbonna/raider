@@ -8,6 +8,7 @@ export const styles = StyleSheet.create({
   mapWrapper: {
     height: 420,
     marginVertical: 16,
+    marginTop: 40,
     borderRadius: 20,
     overflow: 'hidden',
     elevation: 6,
