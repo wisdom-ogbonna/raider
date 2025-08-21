@@ -20,6 +20,8 @@ import { db } from "../../config/firebase";
 import { customMapStyle } from "../../styles/mapStyle";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
+import { formatDistanceToNow } from "date-fns";
+import { Ionicons } from "@expo/vector-icons";
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
 const API_URL = "https://lamigra-backend.onrender.com/api/report-raid";
@@ -53,6 +55,23 @@ const IceReporter = () => {
     { label: "Reports from others (second hand info)", value: "second_hand" },
   ];
 
+  // const getCategoryIcon = (category) => {
+  //   switch (category) {
+  //     case "sos":
+  //       return require("../../assets/icons/sos.png");
+  //     case "suspicious":
+  //       return require("../../assets/icons/suspicious.png");
+  //     // case 'checkpoint':
+  //     //   return require('../../assets/icons/checkpoint.png');
+  //     // case 'ice_agents':
+  //     //   return require('../../assets/icons/ice_agents.png');
+  //     // case 'second_hand':
+  //     //   return require('../../assets/icons/second_hand.png');
+  //     // default:
+  //     //   return require('../../assets/icons/default.png');
+  //   }
+  // };
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(categoryOptions[0]);
 
@@ -65,8 +84,18 @@ const IceReporter = () => {
       raidQuery,
       (snapshot) => {
         const raidList = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .map((doc) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate
+                ? data.createdAt.toDate()
+                : null, // ✅ convert timestamp
+            };
+          })
           .filter((raid) => raid.latitude && raid.longitude);
+
         setRaids(raidList);
       },
       (error) => {
@@ -248,25 +277,146 @@ const IceReporter = () => {
               }}
               title={t("iceReporter.raidMarkerTitle")}
               description={raid.description}
-              pinColor="crimson"
             >
-              <Callout>
-                <View style={{ width: 200 }}>
-                  <Text style={{ fontWeight: "bold" }}>
-                    {raid.reportedAddress}
-                  </Text>
-                  <Text>{raid.description}</Text>
-                  {raid.imageUrl && (
-                    <Image
-                      source={{ uri: raid.imageUrl }}
-                      style={{
-                        width: 180,
-                        height: 100,
-                        marginTop: 5,
-                        borderRadius: 8,
-                      }}
-                      resizeMode="cover"
+              <Text style={{ fontSize: 32 }}>
+                {raid.category === "sos"
+                  ? "🆘"
+                  : raid.category === "suspicious"
+                  ? "🚨"
+                  : raid.category === "checkpoint"
+                  ? "🚧"
+                  : raid.category === "ice_agents"
+                  ? "👮"
+                  : raid.category === "second_hand"
+                  ? "📡"
+                  : "📍"}
+              </Text>
+
+              <Callout tooltip>
+                <View
+                  style={{
+                    backgroundColor: "#fff",
+                    borderRadius: 12,
+                    padding: 12,
+                    width: 240,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 4,
+                    elevation: 4,
+                  }}
+                >
+                  {/* Location */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <Ionicons
+                      name="location-outline"
+                      size={16}
+                      color="#007AFF"
+                      style={{ marginRight: 6 }}
                     />
+                    <Text
+                      style={{ fontWeight: "600", fontSize: 14, color: "#222" }}
+                    >
+                      ICE location is:
+                    </Text>
+                  </View>
+                  <Text
+                    style={{ fontSize: 14, color: "#444", marginBottom: 8 }}
+                  >
+                    {raid.reportedAddress || "Unknown Location"}
+                  </Text>
+
+                  {/* Description */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <Ionicons
+                      name="information-circle-outline"
+                      size={16}
+                      color="#FF9500"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={{ fontWeight: "600", fontSize: 14, color: "#222" }}
+                    >
+                      Description is:
+                    </Text>
+                  </View>
+                  <Text
+                    style={{ fontSize: 14, color: "#444", marginBottom: 8 }}
+                  >
+                    {raid.description || "No description available."}
+                  </Text>
+
+                  {/* Time */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <Ionicons
+                      name="time-outline"
+                      size={16}
+                      color="#8E8E93"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={{ fontSize: 12, color: "#888" }}>
+                      {raid.createdAt
+                        ? `${formatDistanceToNow(raid.createdAt, {
+                            addSuffix: true,
+                          })}`
+                        : "Time not available"}
+                    </Text>
+                  </View>
+
+                  {/* Image */}
+                  {raid.imageUrl && (
+                    <>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 6,
+                        }}
+                      >
+                        <Ionicons
+                          name="image-outline"
+                          size={16}
+                          color="#34C759"
+                          style={{ marginRight: 6 }}
+                        />
+                        <Text
+                          style={{
+                            fontWeight: "600",
+                            fontSize: 14,
+                            color: "#222",
+                          }}
+                        >
+                          Image is:
+                        </Text>
+                      </View>
+                      <Image
+                        source={{ uri: raid.imageUrl }}
+                        style={{
+                          width: "100%",
+                          height: 120,
+                          borderRadius: 8,
+                        }}
+                        resizeMode="cover"
+                      />
+                    </>
                   )}
                 </View>
               </Callout>
@@ -309,46 +459,52 @@ const IceReporter = () => {
       />
 
       {/* Category Dropdown */}
-<View style={styles.categoryContainer}>
-  <Text style={styles.categoryLabel}>Category</Text>
-  <Button
-    mode="outlined"
-    onPress={() => setMenuVisible(true)}
-    style={styles.categoryButton}
-    contentStyle={styles.categoryButtonContent}
-    labelStyle={styles.categoryButtonLabel}
-  >
-    {selectedCategory.label}
-  </Button>
+      <View style={styles.categoryContainer}>
+        <Text style={styles.categoryLabel}>Category</Text>
+        <Button
+          mode="outlined"
+          onPress={() => setMenuVisible(true)}
+          style={styles.categoryButton}
+          contentStyle={styles.categoryButtonContent}
+          labelStyle={styles.categoryButtonLabel}
+        >
+          {selectedCategory.label}
+        </Button>
 
-  <Menu
-    visible={menuVisible}
-    onDismiss={() => setMenuVisible(false)}
-    anchor={{ x: 0, y: 0 }}
-    style={styles.categoryMenu}
-  >
-    {categoryOptions.map((option) => (
-      <Menu.Item
-        key={option.value}
-        onPress={() => {
-          setSelectedCategory(option);
-          setCategory(option.value);
-          setMenuVisible(false);
-        }}
-        title={option.label}
-        titleStyle={[
-          styles.menuItemTitle,
-          option.value === selectedCategory.value && styles.menuItemTitleSelected,
-        ]}
-        style={[
-          styles.menuItem,
-          option.value === selectedCategory.value && styles.menuItemSelected,
-        ]}
-      />
-    ))}
-  </Menu>
-</View>
+<Menu
+  visible={menuVisible}
+  onDismiss={() => setMenuVisible(false)}
+  anchor={
+    <View style={{ width: '100%', alignItems: 'center' }}>
+      <Text></Text>
+    </View>
+  }
+  style={[styles.categoryMenu, { alignSelf: 'center' }]}
+>
 
+          {categoryOptions.map((option) => (
+            <Menu.Item
+              key={option.value}
+              onPress={() => {
+                setSelectedCategory(option);
+                setCategory(option.value);
+                setMenuVisible(false);
+              }}
+              title={option.label}
+              titleStyle={[
+                styles.menuItemTitle,
+                option.value === selectedCategory.value &&
+                  styles.menuItemTitleSelected,
+              ]}
+              style={[
+                styles.menuItem,
+                option.value === selectedCategory.value &&
+                  styles.menuItemSelected,
+              ]}
+            />
+          ))}
+        </Menu>
+      </View>
 
       {/* Pick Image */}
       <Button

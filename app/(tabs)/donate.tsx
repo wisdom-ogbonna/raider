@@ -6,6 +6,8 @@ import {
   Alert,
   Image as RNImage,
 } from "react-native";
+
+
 import {
   Text,
   Button,
@@ -33,7 +35,7 @@ const DonateScreen = () => {
   const [loading, setLoading] = useState(false);
 
   const handleDonate = async () => {
-    const amount = customAmount || selectedAmount;
+    const amount = customAmount;
     if (!amount) {
       Alert.alert("Error", "Please enter or select a donation amount.");
       return;
@@ -129,15 +131,15 @@ const DonateScreen = () => {
             {t("donate.supportMessage")}
           </Text>
 
-          <Text variant="titleMedium" style={{ marginBottom: 10 }}>
+          {/* <Text variant="titleMedium" style={{ marginBottom: 10 }}>
             {t("donate.selectAmount")}
-          </Text>
+          </Text> */}
 
-          <View
+          {/* <View
             style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}
           >
             {["5", "10", "25", "50"].map(renderAmountButton)}
-          </View>
+          </View> */}
 
           <TextInput
             label={t("donate.customAmountLabel")}

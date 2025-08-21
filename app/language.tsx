@@ -43,7 +43,7 @@ const selectLanguage = async (lang) => {
       <TouchableOpacity
         onPress={() => selectLanguage("es")}
         style={{
-          backgroundColor: "#f97316",
+          backgroundColor: "#000000ff",
           padding: 16,
           borderRadius: 12,
           width: "80%",
