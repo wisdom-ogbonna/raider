@@ -43,7 +43,7 @@ const OnboardingScreen = () => {
     if (pageIndex < onboardingData.length - 1) {
       pagerRef.current.setPage(pageIndex + 1);
     } else {
-      router.replace('/signup');
+      router.replace('/report');
     }
   };
 

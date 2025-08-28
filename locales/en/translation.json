@@ -16,7 +16,13 @@
   "english": "English",
   "spanish": "Spanish",
 
+  "home": "Home",
+  "maps": "Maps",
+  "reports": "Reports",
+
+
   "profile": {
+    "profile": "Profile",
     "logout": "Logout",
     "yourReports": "Your Reports",
     "noReports": "You haven't reported any raids yet.",
@@ -71,6 +77,7 @@
     "failedToAddComment": "Failed to add comment."
   },
   "donate": {
+    "donate": "Donate",
     "supportTitle": "Support This App",
     "supportMessage": "Your donation helps keep our app running, alerts flowing, and families safe.\n100% user-funded. Private. Secure. For the people.",
     "selectAmount": "Select Amount",

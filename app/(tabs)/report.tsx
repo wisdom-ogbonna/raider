@@ -22,6 +22,8 @@ import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
 import { formatDistanceToNow } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
+import ImageViewing from "react-native-image-viewing";
+import { TouchableOpacity } from "react-native";
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
 const API_URL = "https://lamigra-backend.onrender.com/api/report-raid";
@@ -46,6 +48,9 @@ const IceReporter = () => {
   const [category, setCategory] = useState("sos");
 
   const { t } = useTranslation();
+
+  const [visible, setIsVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const categoryOptions = [
     { label: "SOS - Getting Detained", value: "sos" },
@@ -407,15 +412,23 @@ const IceReporter = () => {
                           Image is:
                         </Text>
                       </View>
-                      <Image
-                        source={{ uri: raid.imageUrl }}
-                        style={{
-                          width: "100%",
-                          height: 120,
-                          borderRadius: 8,
+
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedImage([{ uri: raid.imageUrl }]);
+                          setIsVisible(true);
                         }}
-                        resizeMode="cover"
-                      />
+                      >
+                        <Image
+                          source={{ uri: raid.imageUrl }}
+                          style={{
+                            width: "100%",
+                            height: 120,
+                            borderRadius: 8,
+                          }}
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
                     </>
                   )}
                 </View>
@@ -456,6 +469,9 @@ const IceReporter = () => {
         style={styles.input}
         multiline
         mode="outlined"
+        outlineColor="#E0E4EA" // subtle border
+        activeOutlineColor="#007AFF" // accent when focused
+        placeholderTextColor="#888" // modern placeholder color
       />
 
       {/* Category Dropdown */}
@@ -471,17 +487,16 @@ const IceReporter = () => {
           {selectedCategory.label}
         </Button>
 
-<Menu
-  visible={menuVisible}
-  onDismiss={() => setMenuVisible(false)}
-  anchor={
-    <View style={{ width: '100%', alignItems: 'center' }}>
-      <Text></Text>
-    </View>
-  }
-  style={[styles.categoryMenu, { alignSelf: 'center' }]}
->
-
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <View style={{ width: "100%", alignItems: "center" }}>
+              <Text></Text>
+            </View>
+          }
+          style={[styles.categoryMenu, { alignSelf: "center" }]}
+        >
           {categoryOptions.map((option) => (
             <Menu.Item
               key={option.value}
@@ -517,9 +532,17 @@ const IceReporter = () => {
         {image ? t("iceReporter.changeImage") : t("iceReporter.pickImage")}
       </Button>
 
-      {image && (
-        <Image source={{ uri: image.uri }} style={styles.previewImage} />
-      )}
+{image && (
+  <TouchableOpacity
+    onPress={() => {
+      setSelectedImage([{ uri: image.uri }]); // set preview image
+      setIsVisible(true); // open full screen
+    }}
+  >
+    <Image source={{ uri: image.uri }} style={styles.previewImage} />
+  </TouchableOpacity>
+)}
+
 
       {/* Submit */}
       <Button
@@ -531,6 +554,13 @@ const IceReporter = () => {
       >
         {t("iceReporter.reportRaid")}
       </Button>
+
+      <ImageViewing
+        images={selectedImage || []}
+        imageIndex={0}
+        visible={visible}
+        onRequestClose={() => setIsVisible(false)}
+      />
     </ScrollView>
   );
 };

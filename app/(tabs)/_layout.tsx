@@ -3,11 +3,13 @@ import { AuthProvider, AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 import { ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; // Icon set
+import { Ionicons } from "@expo/vector-icons"; 
+import { useTranslation } from "react-i18next"; // ✅ import i18n hook
 
 export default function TabLayout() {
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -24,7 +26,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Home",
+            title: t("home"),
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="home-outline" size={size} color={color} />
             ),
@@ -33,7 +35,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="report"
           options={{
-            title: "Maps",
+            title: t("maps"),
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="warning-outline" size={size} color={color} />
             ),
@@ -50,7 +52,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="raids"
           options={{
-            title: "Reports",
+            title: t("reports"), 
             tabBarIcon: ({ color, size }) => (
               <Ionicons
                 name="document-text-outline"
@@ -64,7 +66,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="donate"
           options={{
-            title: "Donate",
+             title: t("donate.donate"),
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="heart-outline" size={size} color={color} />
             ),
@@ -73,7 +75,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
+           title: t("profile.profile"),
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="person-outline" size={size} color={color} />
             ),

@@ -3,7 +3,7 @@ import { View, Alert, TouchableOpacity } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { doc, setDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 import { db, auth } from "../config/firebase";
 import styles from "../styles/SignupStyles";
@@ -21,12 +21,11 @@ export default function Signup() {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-useEffect(() => {
-  if (user && !user.isAnonymous) {
-    router.push("/report");
-  }
-}, [user]);
-
+  useEffect(() => {
+    if (user && !user.isAnonymous) {
+      router.push("/report");
+    }
+  }, [user]);
 
   const validateInputs = () => {
     if (!name || !email || !password) {
@@ -41,11 +40,14 @@ useEffect(() => {
 
     setLoading(true);
     try {
-      const res = await fetch("https://lamigra-backend.onrender.com/api/otp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await fetch(
+        "https://lamigra-backend.onrender.com/api/otp/send",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
 
       const data = await res.json();
       if (data.success) {
@@ -63,28 +65,45 @@ useEffect(() => {
 
   const handleSignup = async () => {
     if (!otp) {
-      Alert.alert("Missing OTP", "Enter the verification code sent to your email.");
+      Alert.alert(
+        "Missing OTP",
+        "Enter the verification code sent to your email."
+      );
       return;
     }
 
     setLoading(true);
     try {
       // 1. Verify OTP
-      const verifyRes = await fetch("https://lamigra-backend.onrender.com/api/otp/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
+      const verifyRes = await fetch(
+        "https://lamigra-backend.onrender.com/api/otp/verify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, otp }),
+        }
+      );
 
       const verifyData = await verifyRes.json();
       if (!verifyData.success) {
         setLoading(false);
-        return Alert.alert("OTP Error", verifyData.message || "OTP verification failed");
+        return Alert.alert(
+          "OTP Error",
+          verifyData.message || "OTP verification failed"
+        );
       }
 
       // 2. Create Firebase Account
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const { uid } = userCredential.user;
+
+      // 🔹 Update Firebase Auth profile with displayName
+      await updateProfile(userCredential.user, { displayName: name });
+      await userCredential.user.reload(); // 🔹 refreshes local user
 
       await setDoc(doc(db, "users", uid), {
         name,
@@ -109,7 +128,8 @@ useEffect(() => {
       </Text>
 
       <Text variant="bodyMedium" style={styles.subtitle}>
-        Get alerts, report threats, and help keep your community safe — privately and anonymously.
+        Get alerts, report threats, and help keep your community safe —
+        privately and anonymously.
       </Text>
 
       <TextInput
@@ -180,8 +200,16 @@ useEffect(() => {
         </>
       )}
 
-      <Text style={{ fontSize: 12, color: "#777", marginVertical: 15, textAlign: "center" }}>
-        🔒 We will never share your information. No government access. No tracking. Your safety is our priority.
+      <Text
+        style={{
+          fontSize: 12,
+          color: "#777",
+          marginVertical: 15,
+          textAlign: "center",
+        }}
+      >
+        🔒 We will never share your information. No government access. No
+        tracking. Your safety is our priority.
       </Text>
 
       <View style={styles.footerLinksModern}>

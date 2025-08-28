@@ -6,8 +6,6 @@ import {
   Alert,
   Image as RNImage,
 } from "react-native";
-
-
 import {
   Text,
   Button,

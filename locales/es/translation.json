@@ -15,8 +15,12 @@
   "language": "Idioma",
   "english": "Inglés",
   "spanish": "Español",
+  "home": "Inicio",
+  "maps": "Mapas",
+  "reports": "Reportes",
 
   "profile": {
+    "profile": "Perfil",
     "logout": "Cerrar sesión",
     "yourReports": "Tus Reportes",
     "noReports": "Aún no has reportado ninguna redada.",
