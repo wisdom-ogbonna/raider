@@ -121,105 +121,126 @@ export default function Signup() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Text variant="headlineLarge" style={styles.title}>
-        Create Your La Migra Account
-      </Text>
+return (
+  <View style={styles.container}>
+    {/* 🔹 Modern Header with Back to Home */}
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 10,
+        marginBottom: 20,
+      }}
+    >
+      <TouchableOpacity
+        onPress={() => router.push("/")}
+        style={{ flexDirection: "row", alignItems: "center" }}
+      >
+        <Text style={{ fontSize: 20, color: "#0d99b6", marginRight: 6 }}>⬅</Text>
+        <Text style={{ fontSize: 16, fontWeight: "600", color: "#0d99b6" }}>
+          Back to Home
+        </Text>
+      </TouchableOpacity>
+    </View>
 
-      <Text variant="bodyMedium" style={styles.subtitle}>
-        Get alerts, report threats, and help keep your community safe —
-        privately and anonymously.
-      </Text>
+    <Text variant="headlineLarge" style={styles.title}>
+      Create Your La Migra Account
+    </Text>
 
-      <TextInput
-        label="Username/Nickname"
-        value={name}
-        onChangeText={setName}
-        mode="outlined"
-        style={styles.input}
-      />
+    <Text variant="bodyMedium" style={styles.subtitle}>
+      Get alerts, report threats, and help keep your community safe —
+      privately and anonymously.
+    </Text>
 
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        style={styles.input}
-      />
+    <TextInput
+      label="Username/Nickname"
+      value={name}
+      onChangeText={setName}
+      mode="outlined"
+      style={styles.input}
+    />
 
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        mode="outlined"
-        style={styles.input}
-      />
+    <TextInput
+      label="Email"
+      value={email}
+      onChangeText={setEmail}
+      mode="outlined"
+      keyboardType="email-address"
+      autoCapitalize="none"
+      style={styles.input}
+    />
 
-      {!otpSent && (
+    <TextInput
+      label="Password"
+      value={password}
+      onChangeText={setPassword}
+      secureTextEntry
+      mode="outlined"
+      style={styles.input}
+    />
+
+    {!otpSent && (
+      <Button
+        mode="contained"
+        onPress={sendOtp}
+        loading={loading}
+        disabled={loading}
+        buttonColor="#0d99b6"
+        contentStyle={styles.buttonContent}
+        labelStyle={styles.buttonLabel}
+        style={{ marginBottom: 10 }}
+      >
+        {loading ? "Sending OTP..." : "Send OTP to Email"}
+      </Button>
+    )}
+
+    {otpSent && (
+      <>
+        <TextInput
+          label="Enter OTP"
+          value={otp}
+          onChangeText={setOtp}
+          keyboardType="numeric"
+          mode="outlined"
+          style={styles.input}
+        />
+
         <Button
           mode="contained"
-          onPress={sendOtp}
+          onPress={handleSignup}
           loading={loading}
           disabled={loading}
           buttonColor="#0d99b6"
           contentStyle={styles.buttonContent}
           labelStyle={styles.buttonLabel}
-          style={{ marginBottom: 10 }}
+          style={{ marginTop: 10 }}
         >
-          {loading ? "Sending OTP..." : "Send OTP to Email"}
+          {loading ? "Creating Account..." : "Create Account"}
         </Button>
-      )}
+      </>
+    )}
 
-      {otpSent && (
-        <>
-          <TextInput
-            label="Enter OTP"
-            value={otp}
-            onChangeText={setOtp}
-            keyboardType="numeric"
-            mode="outlined"
-            style={styles.input}
-          />
+    <Text
+      style={{
+        fontSize: 12,
+        color: "#777",
+        marginVertical: 15,
+        textAlign: "center",
+      }}
+    >
+      🔒 We will never share your information. No government access. No
+      tracking. Your safety is our priority.
+    </Text>
 
-          <Button
-            mode="contained"
-            onPress={handleSignup}
-            loading={loading}
-            disabled={loading}
-            buttonColor="#0d99b6"
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.buttonLabel}
-            style={{ marginTop: 10 }}
-          >
-            {loading ? "Creating Account..." : "Create Account"}
-          </Button>
-        </>
-      )}
-
-      <Text
-        style={{
-          fontSize: 12,
-          color: "#777",
-          marginVertical: 15,
-          textAlign: "center",
-        }}
-      >
-        🔒 We will never share your information. No government access. No
-        tracking. Your safety is our priority.
-      </Text>
-
-      <View style={styles.footerLinksModern}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.linkText}>Go Back</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("/signin")}>
-          <Text style={styles.linkText}>Already have an account? Sign In</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.footerLinksModern}>
+      <TouchableOpacity onPress={() => router.back()}>
+        <Text style={styles.linkText}>Go Back</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/signin")}>
+        <Text style={styles.linkText}>Already have an account? Sign In</Text>
+      </TouchableOpacity>
     </View>
-  );
+  </View>
+);
+
 }

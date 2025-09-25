@@ -375,119 +375,120 @@ const IceReporter = () => {
       </View>
 
       {/* Live Address Display */}
-<ScrollView
-  contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 10 }}
-  showsVerticalScrollIndicator={false}
->
-  <View>
-    {/* Live Address Display */}
-    {reportedAddress ? (
-      <View style={{ padding: 10 }}>
-        <Text style={{ fontSize: 16, fontWeight: "600" }}>
-          {t("iceReporter.selectedAddress")}
-        </Text>
-        <Text style={{ color: "#555" }}>{reportedAddress}</Text>
-      </View>
-    ) : (
-      <Text style={{ padding: 10, color: "#888" }}>
-        {t("iceReporter.fetchingAddress")}
-      </Text>
-    )}
-
-    {/* Description Input */}
-    <TextInput
-      label={t("iceReporter.describeRaid")}
-      value={description}
-      onChangeText={setDescription}
-      style={styles.input}
-      multiline
-      mode="outlined"
-      outlineColor="#E0E4EA"
-      activeOutlineColor="#007AFF"
-      placeholderTextColor="#888"
-    />
-
-    {/* Category Dropdown */}
-    <View style={styles.categoryContainer}>
-      <Text style={styles.categoryLabel}>Category</Text>
-      <Button
-        mode="outlined"
-        onPress={() => setMenuVisible(true)}
-        style={styles.categoryButton}
-        contentStyle={styles.categoryButtonContent}
-        labelStyle={styles.categoryButtonLabel}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 10 }}
+        showsVerticalScrollIndicator={false}
       >
-        {selectedCategory.label}
-      </Button>
+        <View>
+          {/* Live Address Display */}
+          {reportedAddress ? (
+            <View style={{ padding: 10 }}>
+              <Text style={{ fontSize: 16, fontWeight: "600" }}>
+                {t("iceReporter.selectedAddress")}
+              </Text>
+              <Text style={{ color: "#555" }}>{reportedAddress}</Text>
+            </View>
+          ) : (
+            <Text style={{ padding: 10, color: "#888" }}>
+              {t("iceReporter.fetchingAddress")}
+            </Text>
+          )}
 
-      <Menu
-        visible={menuVisible}
-        onDismiss={() => setMenuVisible(false)}
-        anchor={<View style={{ width: "100%", alignItems: "center" }}><Text></Text></View>}
-        style={[styles.categoryMenu, { alignSelf: "center" }]}
-      >
-        {categoryOptions.map((option) => (
-          <Menu.Item
-            key={option.value}
-            onPress={() => {
-              setSelectedCategory(option);
-              setCategory(option.value);
-              setMenuVisible(false);
-            }}
-            title={option.label}
-            titleStyle={[
-              styles.menuItemTitle,
-              option.value === selectedCategory.value &&
-                styles.menuItemTitleSelected,
-            ]}
-            style={[
-              styles.menuItem,
-              option.value === selectedCategory.value &&
-                styles.menuItemSelected,
-            ]}
+          {/* Description Input */}
+          <TextInput
+            label={t("iceReporter.describeRaid")}
+            value={description}
+            onChangeText={setDescription}
+            style={styles.input}
+            multiline
+            mode="outlined"
+            outlineColor="#E0E4EA"
+            activeOutlineColor="#007AFF"
+            placeholderTextColor="#888"
           />
-        ))}
-      </Menu>
-    </View>
 
-    {/* Pick Image */}
-    <Button
-      mode="contained"
-      onPress={pickImage}
-      style={styles.button}
-      contentStyle={styles.buttonContent}
-      labelStyle={styles.buttonLabel}
-    >
-      {image ? t("iceReporter.changeImage") : t("iceReporter.pickImage")}
-    </Button>
+          {/* Category Dropdown */}
+          <View style={styles.categoryContainer}>
+            <Text style={styles.categoryLabel}>Category</Text>
+            <Button
+              mode="outlined"
+              onPress={() => setMenuVisible(true)}
+              style={styles.categoryButton}
+              contentStyle={styles.categoryButtonContent}
+              labelStyle={styles.categoryButtonLabel}
+            >
+              {selectedCategory.label}
+            </Button>
 
-    {image && (
-      <TouchableOpacity
-        onPress={() => {
-          setSelectedImage([{ uri: image.uri }]);
-          setIsVisible(true);
-        }}
-      >
-        <Image
-          source={{ uri: image.uri }}
-          style={styles.previewImage}
-        />
-      </TouchableOpacity>
-    )}
+            <Menu
+              visible={menuVisible}
+              onDismiss={() => setMenuVisible(false)}
+              anchor={
+                <View style={{ width: "100%", alignItems: "center" }}>
+                  <Text></Text>
+                </View>
+              }
+              style={[styles.categoryMenu, { alignSelf: "center" }]}
+            >
+              {categoryOptions.map((option) => (
+                <Menu.Item
+                  key={option.value}
+                  onPress={() => {
+                    setSelectedCategory(option);
+                    setCategory(option.value);
+                    setMenuVisible(false);
+                  }}
+                  title={option.label}
+                  titleStyle={[
+                    styles.menuItemTitle,
+                    option.value === selectedCategory.value &&
+                      styles.menuItemTitleSelected,
+                  ]}
+                  style={[
+                    styles.menuItem,
+                    option.value === selectedCategory.value &&
+                      styles.menuItemSelected,
+                  ]}
+                />
+              ))}
+            </Menu>
+          </View>
 
-    {/* Submit */}
-    <Button
-      mode="contained"
-      onPress={reportRaid}
-      style={styles.button}
-      contentStyle={styles.buttonContent}
-      labelStyle={styles.buttonLabel}
-    >
-      {t("iceReporter.reportRaid")}
-    </Button>
-  </View>
-</ScrollView>
+          {/* Pick Image */}
+          <Button
+            mode="contained"
+            onPress={pickImage}
+            style={styles.button}
+            contentStyle={styles.buttonContent}
+            labelStyle={styles.buttonLabel}
+          >
+            {image ? t("iceReporter.changeImage") : t("iceReporter.pickImage")}
+          </Button>
 
+          {image && (
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedImage([{ uri: image.uri }]);
+                setIsVisible(true);
+              }}
+            >
+              <Image source={{ uri: image.uri }} style={styles.previewImage} />
+            </TouchableOpacity>
+          )}
+
+          {/* Submit */}
+          <Button
+            mode="contained"
+            onPress={reportRaid}
+            style={styles.button}
+            contentStyle={styles.buttonContent}
+            labelStyle={styles.buttonLabel}
+          >
+            {t("iceReporter.reportRaid")}
+          </Button>
+        </View>
+      </ScrollView>
 
       <ImageViewing
         images={selectedImage || []}
