@@ -1,23 +1,34 @@
 import { StyleSheet } from 'react-native';
 
+const COLORS = {
+  primary: '#0066FF',
+  primaryLight: '#E6F0FF',
+  text: '#222',
+  textMuted: '#666',
+  background: '#F7F9FC',
+  surface: '#FFFFFF',
+  border: '#E1E8ED',
+};
+
 export const styles = StyleSheet.create({
   container: {
-     flex: 1,  
-    padding: 16,
-    backgroundColor: '#f9f9f9',
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
+
+  // ===== Map Section =====
   mapWrapper: {
-    height: 350,
-    marginVertical: 16,
-    marginTop: 60,
+    flex: 1,
+    marginVertical: 8,
+    marginTop: 48,
     borderRadius: 20,
     overflow: 'hidden',
-    elevation: 6,
+    backgroundColor: COLORS.surface,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    backgroundColor: '#ffffff',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   map: {
     flex: 1,
@@ -26,117 +37,137 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginLeft: -20,
-    marginTop: -40,
+    marginLeft: -18,
+    marginTop: -36,
     zIndex: 10,
   },
+
+  // ===== Input Fields =====
   input: {
-    marginVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#ffffff',
-  },
-  button: {
-    marginVertical: 10,
+    marginVertical: 6,
     borderRadius: 12,
-    backgroundColor: '#0084ff',
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    fontSize: 14,
+    paddingHorizontal: 10,
+  },
+
+  // ===== Buttons =====
+  button: {
+    marginVertical: 6,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
     elevation: 2,
+    alignSelf: 'center',
+    minWidth: 150,
   },
   buttonContent: {
-    paddingVertical: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
   },
   buttonLabel: {
     fontSize: 14,
     fontWeight: '600',
+    color: '#fff',
+    letterSpacing: 0.3,
   },
+  mapTypeButton: {
+    marginTop: 10,
+    alignSelf: 'center',
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: COLORS.surface,
+  },
+
+  // ===== Text =====
   reportedAddress: {
     textAlign: 'center',
-    marginVertical: 12,
+    marginVertical: 10,
     fontStyle: 'italic',
-    fontSize: 14,
-    color: '#444',
+    fontSize: 13,
+    color: COLORS.textMuted,
   },
+
+  // ===== Preview Image =====
   previewImage: {
     width: '100%',
-    height: 220,
-    marginVertical: 12,
-    borderRadius: 16,
-    borderColor: '#ddd',
+    height: 150,
+    marginVertical: 10,
+    borderRadius: 14,
+    borderColor: COLORS.border,
     borderWidth: 1,
   },
-  logoutButton: {
-    marginTop: 20,
-  },
+
+  // ===== Interaction Section =====
   interactionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     marginTop: 10,
   },
   likeButton: {
-    backgroundColor: '#d0f0fd',
-    padding: 8,
+    backgroundColor: COLORS.primaryLight,
+    padding: 6,
     borderRadius: 8,
   },
   reactionRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   reactionEmoji: {
-    fontSize: 22,
-    marginHorizontal: 5,
-  },
-  mapTypeButton: {
-    marginTop: 12,
-    alignSelf: 'center',
-    borderColor: '#0084ff',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    fontSize: 20,
+    marginHorizontal: 4,
   },
 
-  // Category dropdown styles
+  // ===== Category Dropdown =====
   categoryContainer: {
     marginHorizontal: 10,
-    marginTop: 10,
+    marginTop: 8,
   },
   categoryLabel: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 5,
+    marginBottom: 4,
+    color: COLORS.text,
   },
   categoryButton: {
-    borderColor: '#2196F3',
-    borderWidth: 1.5,
-    borderRadius: 12,
+    borderColor: COLORS.primary,
+    borderWidth: 1.2,
+    borderRadius: 10,
     justifyContent: 'flex-start',
+    backgroundColor: COLORS.surface,
   },
   categoryButtonContent: {
     justifyContent: 'flex-start',
-    height: 50,
+    height: 42,
   },
   categoryButtonLabel: {
-    color: '#2196F3',
-    fontSize: 16,
+    color: COLORS.primary,
+    fontSize: 14,
   },
   categoryMenu: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
-    marginTop: 10,
-    marginHorizontal: 10,
+    marginTop: 8,
+    marginHorizontal: 8,
     elevation: 3,
   },
   menuItem: {
     backgroundColor: 'transparent',
   },
   menuItemSelected: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: COLORS.primaryLight,
   },
   menuItemTitle: {
-    color: '#333',
-    fontWeight: 'normal',
+    color: COLORS.text,
+    fontWeight: '400',
+    fontSize: 14,
   },
   menuItemTitleSelected: {
-    color: '#2196F3',
-    fontWeight: 'bold',
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
