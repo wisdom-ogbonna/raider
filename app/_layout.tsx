@@ -1,12 +1,14 @@
+// /app/_layout.js or /app/_layout.tsx
 import { Stack } from "expo-router";
 import { AuthProvider } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import "../i18n"; // Load translations before anything else
+import "../i18n"; // Load translations
 import i18n from "../i18n";
-import { Provider as PaperProvider,MD3LightTheme } from "react-native-paper";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Provider as PaperProvider, MD3LightTheme } from "react-native-paper";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 export default function RootLayout() {
   const router = useRouter();
@@ -17,7 +19,7 @@ export default function RootLayout() {
         const lang = await AsyncStorage.getItem("appLanguage");
 
         if (!lang) {
-          router.replace("/language"); // 🟡 Redirect to language screen first
+          router.replace("/language"); // Redirect to language screen
           return;
         }
 
@@ -26,10 +28,10 @@ export default function RootLayout() {
 
         const onboarded = await AsyncStorage.getItem("onboarded");
         if (onboarded !== "true") {
-          router.replace("/onboarding"); // 🟡 Go to onboarding if not done
+          router.replace("/onboarding"); // Go to onboarding if not done
         }
 
-        // If both are OK, do nothing. Allow normal routing.
+        // Both checks passed → do nothing, allow normal routing
       } catch (error) {
         console.error("Error checking onboarding/language:", error);
         router.replace("/language"); // fallback
@@ -40,46 +42,39 @@ export default function RootLayout() {
   }, []);
 
   return (
-       <GestureHandlerRootView style={{ flex: 1 }}>
-     <PaperProvider theme={MD3LightTheme}>
-    <AuthProvider>
-      <Stack>
-        {/* Language Selection Screen */}
-        <Stack.Screen name="language" options={{ headerShown: false }} />
+    <StripeProvider
+      publishableKey="pk_test_51S8ENdDgrgdXEt1Stm6IZ5UGZvMHLo7NBVodx3kaZklvizkDIsFottPZbS6m4Ioh2such43A4wdYSqKRgY4EZN2n00FEu2CENX"
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <PaperProvider theme={MD3LightTheme}>
+          <AuthProvider>
+            <Stack>
+              {/* Language Selection Screen */}
+              <Stack.Screen name="language" options={{ headerShown: false }} />
 
-        {/* Onboarding Screen */}
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+              {/* Onboarding Screen */}
+              <Stack.Screen name="onboarding" options={{ headerShown: false }} />
 
-        {/* Main App Tabs */}
-        <Stack.Screen
-          name="(tabs)"
-          options={{ headerShown: false, headerBackTitle: "Back" }}
-        />
+              {/* Main App Tabs Layout */}
+              <Stack.Screen
+                name="(tabs)"
+                options={{ headerShown: false, headerBackTitle: "Back" }}
+              />
 
-        {/* Auth Screens */}
-        <Stack.Screen name="signin" options={{ headerTitle: "Sign In" }} />
-        <Stack.Screen name="signup" options={{ headerTitle: "Sign Up" }} />
-        <Stack.Screen
-          name="PhoneVerificationScreen"
-          options={{ headerShown: false }}
-        />
+              {/* Auth Screens */}
+              <Stack.Screen name="signin" options={{ headerTitle: "Sign In" }} />
+              <Stack.Screen name="signup" options={{ headerTitle: "Sign Up" }} />
+              <Stack.Screen
+                name="PhoneVerificationScreen"
+                options={{ headerShown: false }}
+              />
 
-        {/* Donation */}
-        <Stack.Screen
-          name="donate"
-          options={{
-            headerTitle: "Donate",
-            headerBackTitle: "Back",
-             headerShown: false
-          }}
-        />
-        <Stack.Screen name="profile" options={{ headerShown: false }} />
-
-        {/* Not Found */}
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </AuthProvider>
-    </PaperProvider>
-    </GestureHandlerRootView>
+              {/* Not Found */}
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </AuthProvider>
+        </PaperProvider>
+      </GestureHandlerRootView>
+    </StripeProvider>
   );
 }

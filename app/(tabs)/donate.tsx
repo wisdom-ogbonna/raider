@@ -1,220 +1,111 @@
 import React, { useState } from "react";
 import {
   View,
-  ScrollView,
-  Linking,
-  Alert,
-  Image as RNImage,
-} from "react-native";
-import {
   Text,
-  Button,
   TextInput,
-  Card,
-  Switch,
-  RadioButton,
-  Divider,
-  Appbar,
+  TouchableOpacity,
   ActivityIndicator,
-} from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
-import { useTranslation } from "react-i18next";
+  Alert,
+  StyleSheet,
+} from "react-native";
+import { CardField, useStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 
-const DonateScreen = () => {
-  const { t } = useTranslation();
-  const navigation = useNavigation();
-  const brandColor = "#0d99b6";
-
-  const [selectedAmount, setSelectedAmount] = useState("10");
-  const [customAmount, setCustomAmount] = useState("");
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("paypal");
+const DonationScreen = () => {
+  const { confirmPayment } = useStripe();
+  const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cardDetails, setCardDetails] = useState(null);
 
   const handleDonate = async () => {
-    const amount = customAmount;
-    if (!amount) {
-      Alert.alert("Error", "Please enter or select a donation amount.");
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+      Alert.alert("Invalid Amount", "Please enter a valid donation amount.");
       return;
     }
 
-    setLoading(true);
+    if (!cardDetails?.complete) {
+      Alert.alert("Incomplete Card", "Please enter complete card details.");
+      return;
+    }
+
     try {
-      const response = await axios.post(
-        "https://lamigra-backend.onrender.com/api/donate",
+      setLoading(true);
+
+      // 1. Ask backend to create PaymentIntent
+      const res = await axios.post(
+        "http://192.168.1.79:5000/api/donations/create-payment-intent",
         {
-          amount,
-          currency: "USD",
+          amount: Math.round(parseFloat(amount) * 100), // convert to cents
         }
       );
 
-      const approveLink = response.data.approveLink;
-      if (approveLink) {
-        Linking.openURL(approveLink);
-      } else {
-        Alert.alert("Error", "Unable to retrieve PayPal approval link.");
+      const clientSecret = res.data.clientSecret;
+
+      // 2. Confirm payment on the device using Stripe SDK
+      const { error, paymentIntent } = await confirmPayment(clientSecret, {
+        paymentMethodType: "Card",
+      });
+
+      if (error) {
+        Alert.alert("Payment failed", error.message);
+      } else if (paymentIntent) {
+        Alert.alert("Success 🎉", `Donation of $${amount} completed!`);
+        setAmount("");
       }
-    } catch (error) {
-      console.error("Donation Error:", error.message);
-      Alert.alert("Error", "Donation failed. Please try again later.");
+    } catch (err) {
+      Alert.alert("Error", err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderAmountButton = (amount) => (
-    <Button
-      key={amount}
-      mode={selectedAmount === amount ? "contained" : "outlined"}
-      onPress={() => {
-        setSelectedAmount(amount);
-        setCustomAmount("");
-      }}
-      style={{ marginRight: 10, marginBottom: 10 }}
-      buttonColor={selectedAmount === amount ? brandColor : undefined}
-      textColor={selectedAmount === amount ? "white" : brandColor}
-    >
-      ${amount}
-    </Button>
-  );
-
   return (
-    <>
-      <Appbar.Header>
-        <Appbar.Content
-          title={
-            <View
-              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-            >
-              <RNImage
-                source={require("../../assets/images/logo.png")}
-                style={{ width: 120, height: 120, marginLeft: 15 }}
-              />
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "flex-start",
-                }}
-              >
-                <Text variant="headlineMedium" style={{ color: "white" }}>
-                  LAMIGRA
-                </Text>
-              </View>
-            </View>
-          }
-        />
-        <Appbar.Action
-          icon="home"
-          onPress={() => navigation.navigate("(tabs)")}
-        />
-        <Appbar.Action
-          icon="hand-heart"
-          onPress={() => navigation.navigate("donate")}
-        />
-        <Appbar.Action
-          icon="account"
-          onPress={() => navigation.navigate("profile")}
-        />
-      </Appbar.Header>
+    <View style={styles.container}>
+      <Text style={styles.title}>Donate to Support Us 💙</Text>
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <Card style={{ padding: 20 }}>
-          <Text variant="titleLarge" style={{ marginBottom: 10 }}>
-            {t("donate.supportTitle")}
-          </Text>
+      <Text style={styles.label}>Donation Amount (USD)</Text>
+      <TextInput
+        value={amount}
+        onChangeText={setAmount}
+        keyboardType="numeric"
+        placeholder="Enter amount"
+        style={styles.input}
+      />
 
-          <Text variant="bodyMedium" style={{ marginBottom: 20 }}>
-            {t("donate.supportMessage")}
-          </Text>
+      <Text style={styles.label}>Card Information</Text>
+      <CardField
+        postalCodeEnabled={false}
+        placeholder={{ number: "4242 4242 4242 4242" }}
+        cardStyle={styles.cardStyle}
+        style={styles.cardField}
+        onCardChange={(details) => setCardDetails(details)}
+      />
 
-          {/* <Text variant="titleMedium" style={{ marginBottom: 10 }}>
-            {t("donate.selectAmount")}
-          </Text> */}
-
-          {/* <View
-            style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}
-          >
-            {["5", "10", "25", "50"].map(renderAmountButton)}
-          </View> */}
-
-          <TextInput
-            label={t("donate.customAmountLabel")}
-            value={customAmount}
-            onChangeText={setCustomAmount}
-            keyboardType="numeric"
-            mode="outlined"
-            outlineColor={brandColor}
-            activeOutlineColor={brandColor}
-            style={{ marginBottom: 20 }}
-            onFocus={() => setSelectedAmount("")}
-          />
-
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 20,
-            }}
-          >
-            <Switch
-              value={isRecurring}
-              onValueChange={setIsRecurring}
-              color={brandColor}
-            />
-            <Text style={{ marginLeft: 10 }}>{t("donate.monthlyToggle")}</Text>
-          </View>
-
-          <Divider style={{ marginBottom: 20 }} />
-
-          <Text variant="titleMedium" style={{ marginBottom: 10 }}>
-            {t("donate.paymentMethod")}
-          </Text>
-
-          <RadioButton.Group
-            onValueChange={(value) => setPaymentMethod(value)}
-            value={paymentMethod}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <RadioButton value="card" color={brandColor} />
-              <Text>{t("donate.card")}</Text>
-            </View>
-
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <RadioButton value="paypal" color={brandColor} />
-              <Text>{t("donate.paypal")}</Text>
-            </View>
-          </RadioButton.Group>
-
-          <Text
-            style={{
-              fontSize: 12,
-              color: "#777",
-              marginTop: 30,
-              marginBottom: 15,
-            }}
-          >
-            {t("donate.privacyNote")}
-          </Text>
-
-          <Button
-            mode="contained"
-            onPress={handleDonate}
-            style={{ marginTop: 10 }}
-            buttonColor={brandColor}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              t("donate.donateButton")
-            )}
-          </Button>
-        </Card>
-      </ScrollView>
-    </>
+      <TouchableOpacity
+        onPress={handleDonate}
+        disabled={loading}
+        style={[styles.button, loading && styles.buttonDisabled]}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Donate Now</Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 };
 
-export default DonateScreen;
+export default DonationScreen;
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#F9FAFB", padding: 20, paddingTop: 40 },
+  title: { fontSize: 24, fontWeight: "bold", color: "#1E40AF", textAlign: "center", marginBottom: 30 },
+  label: { fontSize: 16, fontWeight: "600", color: "#374151", marginBottom: 8 },
+  input: { borderWidth: 1, borderColor: "#D1D5DB", borderRadius: 12, padding: 12, fontSize: 16, marginBottom: 20, backgroundColor: "#fff" },
+  cardStyle: { backgroundColor: "#fff", textColor: "#000", borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12 },
+  cardField: { height: 50, marginVertical: 10 },
+  button: { marginTop: 30, backgroundColor: "#2563EB", paddingVertical: 14, borderRadius: 12, alignItems: "center" },
+  buttonDisabled: { backgroundColor: "#93C5FD" },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+});

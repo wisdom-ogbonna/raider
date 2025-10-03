@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabnled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.doph574.Iceraider",
