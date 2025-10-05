@@ -12,8 +12,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.doph574.Iceraider",
       "infoPlist": {
-
-        "UIBackgroundModes": ["location", "fetch"],
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ],
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "App needs location access to show ICE raids nearby.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "App requires location data to function properly.",
@@ -32,7 +34,7 @@
         "NSHealthUpdateUsageDescription": "App can update Health data to help monitor your fitness.",
         "NSMotionUsageDescription": "App needs access to motion data to enhance location tracking accuracy.",
         "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true // Enable if the app makes HTTP (non-HTTPS) requests.
+          "NSAllowsArbitraryLoads": true
         }
       }
     },
@@ -49,9 +51,13 @@
               "scheme": "myapp"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
-      ]
+      ],
+      "package": "com.doph574.Iceraider"
     },
     "web": {
       "bundler": "metro",
@@ -69,7 +75,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
-        "expo-image-picker"
+      "expo-image-picker"
     ],
     "experiments": {
       "typedRoutes": true
