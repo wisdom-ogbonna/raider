@@ -2,35 +2,26 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
+     flex: 1,  
+    padding: 16,
     backgroundColor: '#f9f9f9',
   },
-
-  // Map covers the full background
   mapWrapper: {
-    flex: 1,
+    height: 550,
+    marginVertical: 16,
+    marginTop: 60,
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    backgroundColor: '#ffffff',
   },
   map: {
     flex: 1,
   },
-
-  // Floating form container
-  formContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-  },
-
   centerPin: {
     position: 'absolute',
     top: '50%',
@@ -43,22 +34,19 @@ export const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 10,
     backgroundColor: '#ffffff',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
   },
   button: {
     marginVertical: 10,
     borderRadius: 12,
     backgroundColor: '#0084ff',
     elevation: 2,
-    alignItems: 'center',
+  },
+  buttonContent: {
     paddingVertical: 12,
   },
   buttonLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
   },
   reportedAddress: {
     textAlign: 'center',

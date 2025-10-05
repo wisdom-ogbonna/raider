@@ -10,6 +10,12 @@ import { Provider as PaperProvider, MD3LightTheme } from "react-native-paper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StripeProvider } from "@stripe/stripe-react-native";
 
+
+
+
+
+
+
 export default function RootLayout() {
   const router = useRouter();
 
@@ -42,9 +48,7 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <StripeProvider
-      publishableKey="pk_test_51S8ENdDgrgdXEt1Stm6IZ5UGZvMHLo7NBVodx3kaZklvizkDIsFottPZbS6m4Ioh2such43A4wdYSqKRgY4EZN2n00FEu2CENX"
-    >
+    <StripeProvider publishableKey="pk_live_51S8ENdDgrgdXEt1S3E3pkRZ2XcW6xRc1oprPgBpDLdOsFExHPNoqU8U1Yrd8TIhSuThR2c0Womxi7HdsriInBp7s00yK8iknn3">
       <GestureHandlerRootView style={{ flex: 1 }}>
         <PaperProvider theme={MD3LightTheme}>
           <AuthProvider>
@@ -75,6 +79,7 @@ export default function RootLayout() {
           </AuthProvider>
         </PaperProvider>
       </GestureHandlerRootView>
-    </StripeProvider>
+      </StripeProvider>
+
   );
 }

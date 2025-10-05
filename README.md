@@ -71,3 +71,7 @@ expo user: wisdomogbonna777@gmail.com
 expo pass: W&xGr_kcv5_k+nf
 
 bundle identifier : com.doph574.Iceraider
+
+eas build --profile development --platform ios
+
+npx expo start --dev-client

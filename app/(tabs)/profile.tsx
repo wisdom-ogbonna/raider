@@ -105,7 +105,7 @@ const ProfilePage = () => {
               style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
             >
               <Image
-                source={require("../../assets/images/logo.png")}
+                source={require("../../assets/images/logo1.png")}
                 style={{ width: 120, height: 120, marginLeft: 15 }}
               />
               <View
