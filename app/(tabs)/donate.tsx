@@ -69,7 +69,7 @@ export default function DonationScreen() {
   return (
     <View
       style={styles.container}
-      onStartShouldSetResponder={dismissKeyboard}
+      onStartShouldSetResponderCapture={dismissKeyboard}
     >
       <Text style={styles.header}>Support Our Mission</Text>
 
