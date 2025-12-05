@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   mapWrapper: {
-    height: 480,
+    height: 380,
     marginVertical: 16,
     marginTop: 60,
     borderRadius: 20,

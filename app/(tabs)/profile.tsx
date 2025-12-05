@@ -17,6 +17,7 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { AuthContext } from "../../context/AuthContext";
@@ -79,6 +80,29 @@ const ProfilePage = () => {
     } catch (error) {
       Alert.alert("Error", "Logout failed. Please try again.");
     }
+  };
+
+  const handleDeleteRaid = (raidId) => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this raid?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, "ice_raids", raidId));
+              Alert.alert("Success", "Raid deleted successfully");
+            } catch (error) {
+              console.log(error);
+              Alert.alert("Error", "Failed to delete raid");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getInitial = () =>
@@ -190,9 +214,21 @@ const ProfilePage = () => {
                 ).toLocaleDateString()}`}
                 subtitle={`${t("profile.address")}: ${raid.reportedAddress}`}
               />
+
               <Card.Content>
                 <Text variant="bodyMedium">{raid.description}</Text>
               </Card.Content>
+
+              {/* Delete Button */}
+              <Card.Actions style={{ justifyContent: "flex-end", padding: 10 }}>
+                <Button
+                  mode="contained"
+                  buttonColor="#b91c1c"
+                  onPress={() => handleDeleteRaid(raid.id)}
+                >
+                  Delete
+                </Button>
+              </Card.Actions>
             </Card>
           ))
         )}

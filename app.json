@@ -17,7 +17,7 @@
           "fetch"
         ],
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocationWhenInUseUsageDescription": "App needs location access to show ICE raids nearby.",
+        "NSLocationWhenInUseUsageDescription": "App needs your location to display user-submitted reports and updates near you.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "App requires location data to function properly.",
         "NSLocationAlwaysUsageDescription": "Access is needed to track current location for alerts.",
         "NSCameraUsageDescription": "App needs access to your camera to take photos.",
@@ -69,8 +69,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/splashh.png",
+          "imageWidth": 600,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }

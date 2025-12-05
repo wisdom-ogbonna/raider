@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleDisplayName</key>
+    <string>LaMigraApp</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>myapp</string>
+          <string>com.doph574.Iceraider</string>
+        </array>
+      </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>exp+iceraider</string>
+        </array>
+      </dict>
+    </array>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSAllowsArbitraryLoads</key>
+      <true/>
+    </dict>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>App uses Bluetooth to detect nearby devices for enhanced functionality.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>App needs Bluetooth to connect to peripherals.</string>
+    <key>NSCalendarUsageDescription</key>
+    <string>App uses calendar access to schedule reminders.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>App needs access to your camera to take photos.</string>
+    <key>NSContactsUsageDescription</key>
+    <string>App requires access to contacts to connect with other users.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>App uses Face ID for authentication and login.</string>
+    <key>NSHealthShareUsageDescription</key>
+    <string>App requires Health data sharing to track your health metrics (if applicable).</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>App can update Health data to help monitor your fitness.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>App requires location data to function properly.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Access is needed to track current location for alerts.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>App needs your location to display user-submitted reports and updates near you.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>App requires microphone access for voice input and recording.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>App needs access to motion data to enhance location tracking accuracy.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>App needs access to your photo library to upload images.</string>
+    <key>NSRemindersUsageDescription</key>
+    <string>App uses reminders for sending scheduled notifications.</string>
+    <key>NSSiriUsageDescription</key>
+    <string>App integrates with Siri to handle voice commands.</string>
+    <key>NSUserActivityTypes</key>
+    <array>
+      <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
+    </array>
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>location</string>
+      <string>fetch</string>
+    </array>
+    <key>UILaunchStoryboardName</key>
+    <string>SplashScreen</string>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+      <string>arm64</string>
+    </array>
+    <key>UIRequiresFullScreen</key>
+    <false/>
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleDefault</string>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+      <string>UIInterfaceOrientationPortrait</string>
+      <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+      <string>UIInterfaceOrientationPortrait</string>
+      <string>UIInterfaceOrientationPortraitUpsideDown</string>
+      <string>UIInterfaceOrientationLandscapeLeft</string>
+      <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UIUserInterfaceStyle</key>
+    <string>Automatic</string>
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <false/>
+  </dict>
+</plist>

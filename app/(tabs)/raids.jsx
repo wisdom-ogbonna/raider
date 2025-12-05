@@ -20,6 +20,10 @@ import {
   serverTimestamp,
   query,
   orderBy,
+  doc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { AuthContext } from "../../context/AuthContext";
@@ -137,6 +141,44 @@ const RaidPage = () => {
     }
   };
 
+  const handleLike = async (raid) => {
+    const raidRef = doc(db, "ice_raids", raid.id);
+    const userId = user?.uid;
+
+    if (!userId) return;
+
+    const hasLiked = raid.likes?.includes(userId);
+    const hasDisliked = raid.dislikes?.includes(userId);
+
+    try {
+      await updateDoc(raidRef, {
+        likes: hasLiked ? arrayRemove(userId) : arrayUnion(userId),
+        ...(hasDisliked && { dislikes: arrayRemove(userId) }),
+      });
+    } catch (error) {
+      console.error("Error updating like:", error);
+    }
+  };
+
+  const handleDislike = async (raid) => {
+    const raidRef = doc(db, "ice_raids", raid.id);
+    const userId = user?.uid;
+
+    if (!userId) return;
+
+    const hasLiked = raid.likes?.includes(userId);
+    const hasDisliked = raid.dislikes?.includes(userId);
+
+    try {
+      await updateDoc(raidRef, {
+        dislikes: hasDisliked ? arrayRemove(userId) : arrayUnion(userId),
+        ...(hasLiked && { likes: arrayRemove(userId) }),
+      });
+    } catch (error) {
+      console.error("Error updating dislike:", error);
+    }
+  };
+
   if (loading || authLoading) {
     return (
       <ActivityIndicator
@@ -153,12 +195,20 @@ const RaidPage = () => {
       <Appbar.Header>
         <Appbar.Content
           title={
-            <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
               <Image
                 source={require("../../assets/images/logo.png")}
                 style={{ width: 120, height: 120, marginLeft: 15 }}
               />
-              <View style={{ flex: 1, justifyContent: "center", alignItems: "flex-start" }}>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                }}
+              >
                 <Text variant="headlineMedium" style={{ color: "white" }}>
                   LAMIGRA
                 </Text>
@@ -167,7 +217,10 @@ const RaidPage = () => {
           }
         />
         <Appbar.Action icon="home" onPress={() => router.push("/")} />
-        <Appbar.Action icon="hand-heart" onPress={() => router.push("/donate")} />
+        <Appbar.Action
+          icon="hand-heart"
+          onPress={() => router.push("/donate")}
+        />
         <Appbar.Action icon="account" onPress={() => router.push("/profile")} />
       </Appbar.Header>
 
@@ -194,13 +247,72 @@ const RaidPage = () => {
                   }}
                 >
                   <Text style={styles.raidText}>
-                    <Text style={styles.boldText}>{t("raidPage.address")}: </Text>
+                    <Text style={styles.boldText}>
+                      {t("raidPage.address")}:{" "}
+                    </Text>
                     {raid.reportedAddress}
                   </Text>
                   <Text style={styles.raidText}>
                     <Text style={styles.boldText}>Description: </Text>
                     {raid.description}
                   </Text>
+                  {/* 🖼 Image */}
+                  {raid.imageUrl && (
+                    <View style={{ marginTop: 10 }}>
+                      <Image
+                        source={{ uri: raid.imageUrl }}
+                        style={{
+                          width: "100%",
+                          height: 200,
+                          borderRadius: 12,
+                          backgroundColor: "#ddd",
+                        }}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  )}
+
+                  {/* 👍 + 👎 Reactions */}
+                  <View style={{ flexDirection: "row", marginTop: 10 }}>
+                    {/* Like */}
+                    <TouchableOpacity
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginRight: 15,
+                      }}
+                      onPress={() => handleLike(raid)}
+                    >
+                      <Ionicons
+                        name="thumbs-up"
+                        size={22}
+                        color={
+                          raid.likes?.includes(user?.uid) ? "#0d99b6" : "gray"
+                        }
+                      />
+                      <Text style={{ marginLeft: 5 }}>
+                        {raid.likes?.length || 0}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Dislike */}
+                    <TouchableOpacity
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                      onPress={() => handleDislike(raid)}
+                    >
+                      <Ionicons
+                        name="thumbs-down"
+                        size={22}
+                        color={
+                          raid.dislikes?.includes(user?.uid) ? "red" : "gray"
+                        }
+                      />
+                      <Text style={{ marginLeft: 5 }}>
+                        {raid.dislikes?.length || 0}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
                   <Text style={styles.raidText}>
                     <Text style={styles.boldText}>Reported By: </Text>
                     {raid.reportedByName || "Anonymous"}
@@ -233,11 +345,16 @@ const RaidPage = () => {
                           }}
                         >
                           {comment.photoURL ? (
-                            <Avatar.Image size={36} source={{ uri: comment.photoURL }} />
+                            <Avatar.Image
+                              size={36}
+                              source={{ uri: comment.photoURL }}
+                            />
                           ) : (
                             <Avatar.Text
                               size={36}
-                              label={comment.commentedBy?.[0]?.toUpperCase() || "A"}
+                              label={
+                                comment.commentedBy?.[0]?.toUpperCase() || "A"
+                              }
                             />
                           )}
                           <View
@@ -254,7 +371,13 @@ const RaidPage = () => {
                             </Text>
                             <Text style={{ fontSize: 14 }}>{comment.text}</Text>
                             {comment.createdAt?.toDate && (
-                              <Text style={{ fontSize: 12, color: "gray", marginTop: 2 }}>
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  color: "gray",
+                                  marginTop: 2,
+                                }}
+                              >
                                 {moment(comment.createdAt.toDate()).fromNow()}
                               </Text>
                             )}
@@ -277,9 +400,15 @@ const RaidPage = () => {
                       }}
                     >
                       {user?.photoURL ? (
-                        <Avatar.Image size={32} source={{ uri: user.photoURL }} />
+                        <Avatar.Image
+                          size={32}
+                          source={{ uri: user.photoURL }}
+                        />
                       ) : (
-                        <Avatar.Text size={32} label={user?.displayName?.[0] || "A"} />
+                        <Avatar.Text
+                          size={32}
+                          label={user?.displayName?.[0] || "A"}
+                        />
                       )}
                       <TextInput
                         style={{
@@ -290,7 +419,9 @@ const RaidPage = () => {
                         }}
                         placeholder="Write a comment..."
                         value={commentTexts[raid.id] || ""}
-                        onChangeText={(text) => handleCommentTextChange(raid.id, text)}
+                        onChangeText={(text) =>
+                          handleCommentTextChange(raid.id, text)
+                        }
                       />
                       <IconButton
                         icon="send"
@@ -304,9 +435,17 @@ const RaidPage = () => {
                   {/* ✅ Comment toggle button */}
                   <TouchableOpacity
                     onPress={() => toggleCommentInput(raid.id)}
-                    style={{ marginTop: 8, flexDirection: "row", alignItems: "center" }}
+                    style={{
+                      marginTop: 8,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
                   >
-                    <Ionicons name="chatbubble-outline" size={20} color="#0d99b6" />
+                    <Ionicons
+                      name="chatbubble-outline"
+                      size={20}
+                      color="#0d99b6"
+                    />
                     <Text style={{ marginLeft: 5, color: "#0d99b6" }}>
                       {visibleCommentInputs[raid.id] ? "Cancel" : "Comment"}
                     </Text>

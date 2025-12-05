@@ -34,6 +34,7 @@ import { KeyboardAvoidingView } from "react-native";
 // Firestore extras for comments
 import { addDoc, serverTimestamp } from "firebase/firestore";
 import { ScrollView } from "react-native-gesture-handler";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
 const API_URL = "https://lamigra-backend.onrender.com/api/report-raid";
@@ -82,6 +83,7 @@ const IceReporter = () => {
   const [commentText, setCommentText] = useState("");
   const sheetUnsubscribeRef = useRef(null);
   const [showComments, setShowComments] = useState(false);
+  const [reporting, setReporting] = useState(false); // ✅ New loading state
 
   useEffect(() => {
     const raidQuery = query(
@@ -256,6 +258,8 @@ const IceReporter = () => {
       return;
     }
     try {
+      setReporting(true); // ✅ Start loading
+
       const token = await user.getIdToken();
       const formData = new FormData();
       formData.append("description", description);
@@ -270,26 +274,16 @@ const IceReporter = () => {
         const filename = localUri.split("/").pop();
         const match = /\.(\w+)$/.exec(filename ?? "");
         const type = match ? `image/${match[1]}` : `image`;
-
-        // On iOS, uri must start with file://
         const correctedUri =
           Platform.OS === "android"
             ? localUri
             : localUri.replace("file://", "file:///");
-
-        formData.append("file", {
-          uri: correctedUri,
-          name: filename,
-          type,
-        });
+        formData.append("file", { uri: correctedUri, name: filename, type });
       }
 
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // ❌ DO NOT manually set "Content-Type"
-        },
+        headers: { Authorization: `Bearer ${token}` }, // ❌ DO NOT set Content-Type manually
         body: formData,
       });
 
@@ -305,6 +299,8 @@ const IceReporter = () => {
     } catch (error) {
       console.error("Upload error:", error);
       Alert.alert(t("iceReporter.error"), error.message);
+    } finally {
+      setReporting(false); // ✅ Stop loading no matter what
     }
   };
 
@@ -318,376 +314,412 @@ const IceReporter = () => {
     );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.mapWrapper}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          region={region}
-          onRegionChangeComplete={(newRegion) => {
-            const center = {
-              latitude: newRegion.latitude,
-              longitude: newRegion.longitude,
-            };
-            setLocation(center);
-            setRegion(newRegion);
-            fetchAddress(center.latitude, center.longitude);
-          }}
-          customMapStyle={customMapStyle}
-          showsUserLocation
-          showsMyLocationButton
-          loadingEnabled
-        >
-          {raids.map((raid) => (
-            <Marker
-              key={raid.id}
-              coordinate={{
-                latitude: raid.latitude,
-                longitude: raid.longitude,
-              }}
-              onPress={() => handleMarkerPress(raid)}
-            >
-              <Text style={{ fontSize: 32 }}>
-                {raid.category === "sos"
-                  ? "🆘"
-                  : raid.category === "suspicious"
-                  ? "🚨"
-                  : raid.category === "checkpoint"
-                  ? "🚧"
-                  : raid.category === "ice_agents"
-                  ? "👮"
-                  : raid.category === "second_hand"
-                  ? "📡"
-                  : "📍"}
-              </Text>
-            </Marker>
-          ))}
-        </MapView>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "position"} // 👈 FIX
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : -180} // 👈 MAGIC VALUE
+    >
+      <View style={styles.container}>
+        <View style={styles.mapWrapper}>
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            region={region}
+            onRegionChangeComplete={(newRegion) => {
+              const center = {
+                latitude: newRegion.latitude,
+                longitude: newRegion.longitude,
+              };
+              setLocation(center);
+              setRegion(newRegion);
+              fetchAddress(center.latitude, center.longitude);
+            }}
+            customMapStyle={customMapStyle}
+            showsUserLocation
+            showsMyLocationButton
+            loadingEnabled
+          >
+            {raids.map((raid) => (
+              <Marker
+                key={raid.id}
+                coordinate={{
+                  latitude: raid.latitude,
+                  longitude: raid.longitude,
+                }}
+                onPress={() => handleMarkerPress(raid)}
+              >
+                <Text style={{ fontSize: 32 }}>
+                  {raid.category === "sos"
+                    ? "🆘"
+                    : raid.category === "suspicious"
+                    ? "🚨"
+                    : raid.category === "checkpoint"
+                    ? "🚧"
+                    : raid.category === "ice_agents"
+                    ? "👮"
+                    : raid.category === "second_hand"
+                    ? "📡"
+                    : "📍"}
+                </Text>
+              </Marker>
+            ))}
+          </MapView>
 
-        {/* Center pin overlay */}
-        <View style={styles.centerPin}>
-          <Image
-            source={require("../../assets/images/pin.png")}
-            style={{ width: 40, height: 40 }}
-            resizeMode="contain"
-          />
+          {/* Center pin overlay */}
+          <View style={styles.centerPin}>
+            <Image
+              source={require("../../assets/images/pin.png")}
+              style={{ width: 40, height: 40 }}
+              resizeMode="contain"
+            />
+          </View>
         </View>
-      </View>
 
-      {/* Live Address Display */}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 10 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View>
-          {/* Live Address Display */}
-          {reportedAddress ? (
-            <View style={{ padding: 10 }}>
-              <Text style={{ fontSize: 16, fontWeight: "600" }}>
-                {t("iceReporter.selectedAddress")}
+        {/* Live Address Display */}
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 150, paddingHorizontal: 10 }}
+          extraScrollHeight={150} // 👈 Pushes content up more when keyboard appears
+          enableOnAndroid={true}
+          keyboardOpeningTime={0}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            {/* Live Address Display */}
+            {reportedAddress ? (
+              <View style={{ padding: 10 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600" }}>
+                  {t("iceReporter.selectedAddress")}
+                </Text>
+                <Text style={{ color: "#555" }}>{reportedAddress}</Text>
+              </View>
+            ) : (
+              <Text style={{ padding: 10, color: "#888" }}>
+                {t("iceReporter.fetchingAddress")}
               </Text>
-              <Text style={{ color: "#555" }}>{reportedAddress}</Text>
-            </View>
-          ) : (
-            <Text style={{ padding: 10, color: "#888" }}>
-              {t("iceReporter.fetchingAddress")}
-            </Text>
-          )}
+            )}
 
-          {/* Description Input */}
-          <TextInput
-            label={t("iceReporter.describeRaid")}
-            value={description}
-            onChangeText={setDescription}
-            style={styles.input}
-            multiline
-            mode="outlined"
-            outlineColor="#E0E4EA"
-            activeOutlineColor="#007AFF"
-            placeholderTextColor="#888"
-          />
-
-          {/* Category Dropdown */}
-          <View style={styles.categoryContainer}>
-            <Text style={styles.categoryLabel}>Category</Text>
-            <Button
+            {/* Description Input */}
+            <TextInput
+              label={t("iceReporter.describeRaid")}
+              value={description}
+              onChangeText={setDescription}
+              style={styles.input}
+              multiline
               mode="outlined"
-              onPress={() => setMenuVisible(true)}
-              style={styles.categoryButton}
-              contentStyle={styles.categoryButtonContent}
-              labelStyle={styles.categoryButtonLabel}
+              outlineColor="#E0E4EA"
+              activeOutlineColor="#007AFF"
+              placeholderTextColor="#888"
+            />
+
+            {/* Category Dropdown */}
+            <View style={styles.categoryContainer}>
+              <Text style={styles.categoryLabel}>Category</Text>
+              <Button
+                mode="outlined"
+                onPress={() => setMenuVisible(true)}
+                style={styles.categoryButton}
+                contentStyle={styles.categoryButtonContent}
+                labelStyle={styles.categoryButtonLabel}
+              >
+                {selectedCategory.label}
+              </Button>
+
+              <Menu
+                visible={menuVisible}
+                onDismiss={() => setMenuVisible(false)}
+                anchor={
+                  <View style={{ width: "100%", alignItems: "center" }}>
+                    <Text></Text>
+                  </View>
+                }
+                style={[styles.categoryMenu, { alignSelf: "center" }]}
+              >
+                {categoryOptions.map((option) => (
+                  <Menu.Item
+                    key={option.value}
+                    onPress={() => {
+                      setSelectedCategory(option);
+                      setCategory(option.value);
+                      setMenuVisible(false);
+                    }}
+                    title={option.label}
+                    titleStyle={[
+                      styles.menuItemTitle,
+                      option.value === selectedCategory.value &&
+                        styles.menuItemTitleSelected,
+                    ]}
+                    style={[
+                      styles.menuItem,
+                      option.value === selectedCategory.value &&
+                        styles.menuItemSelected,
+                    ]}
+                  />
+                ))}
+              </Menu>
+            </View>
+
+            {/* Pick Image */}
+            <Button
+              mode="contained"
+              onPress={pickImage}
+              style={styles.button}
+              contentStyle={styles.buttonContent}
+              labelStyle={styles.buttonLabel}
             >
-              {selectedCategory.label}
+              {image
+                ? t("iceReporter.changeImage")
+                : t("iceReporter.pickImage")}
             </Button>
 
-            <Menu
-              visible={menuVisible}
-              onDismiss={() => setMenuVisible(false)}
-              anchor={
-                <View style={{ width: "100%", alignItems: "center" }}>
-                  <Text></Text>
-                </View>
-              }
-              style={[styles.categoryMenu, { alignSelf: "center" }]}
-            >
-              {categoryOptions.map((option) => (
-                <Menu.Item
-                  key={option.value}
-                  onPress={() => {
-                    setSelectedCategory(option);
-                    setCategory(option.value);
-                    setMenuVisible(false);
-                  }}
-                  title={option.label}
-                  titleStyle={[
-                    styles.menuItemTitle,
-                    option.value === selectedCategory.value &&
-                      styles.menuItemTitleSelected,
-                  ]}
-                  style={[
-                    styles.menuItem,
-                    option.value === selectedCategory.value &&
-                      styles.menuItemSelected,
-                  ]}
-                />
-              ))}
-            </Menu>
-          </View>
-
-          {/* Pick Image */}
-          <Button
-            mode="contained"
-            onPress={pickImage}
-            style={styles.button}
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.buttonLabel}
-          >
-            {image ? t("iceReporter.changeImage") : t("iceReporter.pickImage")}
-          </Button>
-
-          {image && (
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedImage([{ uri: image.uri }]);
-                setIsVisible(true);
-              }}
-            >
-              <Image source={{ uri: image.uri }} style={styles.previewImage} />
-            </TouchableOpacity>
-          )}
-
-          {/* Submit */}
-          <Button
-            mode="contained"
-            onPress={reportRaid}
-            style={styles.button}
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.buttonLabel}
-          >
-            {t("iceReporter.reportRaid")}
-          </Button>
-        </View>
-      </ScrollView>
-
-      <ImageViewing
-        images={selectedImage || []}
-        imageIndex={0}
-        visible={visible}
-        onRequestClose={() => setIsVisible(false)}
-      />
-
-      {/* 👇 Paste the BottomSheet here */}
-      <BottomSheet
-        ref={sheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose={true}
-        onClose={closeSheet}
-        backgroundStyle={{ borderRadius: 24, backgroundColor: "#fff" }}
-      >
-        {selectedRaid ? (
-          <BottomSheetFlatList
-            data={showComments ? comments : []} // show comments if toggled
-            keyExtractor={(item, index) => item.id || index.toString()}
-            ListHeaderComponent={
-              <View
-                style={{
-                  backgroundColor: "#f9f9f9",
-                  borderRadius: 16,
-                  padding: 16,
-                  marginBottom: 16,
+            {image && (
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedImage([{ uri: image.uri }]);
+                  setIsVisible(true);
                 }}
               >
-                <Text
-                  style={{ fontSize: 20, fontWeight: "700", marginBottom: 6 }}
+                <Image
+                  source={{ uri: image.uri }}
+                  style={styles.previewImage}
+                />
+              </TouchableOpacity>
+            )}
+
+            {/* Submit */}
+            <Button
+              mode="contained"
+              onPress={reportRaid}
+              style={styles.button}
+              contentStyle={styles.buttonContent}
+              labelStyle={styles.buttonLabel}
+              disabled={reporting} // Prevent double submissions
+            >
+              {reporting ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  {selectedRaid.reportedAddress || "Unknown Location"}
-                </Text>
+                  <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={{ color: "#fff" }}>Submitting...</Text>
+                </View>
+              ) : (
+                t("iceReporter.reportRaid") // Normal button text
+              )}
+            </Button>
+          </View>
+        </KeyboardAwareScrollView>
 
-                <Text style={{ fontSize: 15, color: "#444", marginBottom: 10 }}>
-                  {selectedRaid.description || "No description available."}
-                </Text>
+        <ImageViewing
+          images={selectedImage || []}
+          imageIndex={0}
+          visible={visible}
+          onRequestClose={() => setIsVisible(false)}
+        />
 
-                <Text style={{ color: "#999", fontSize: 13 }}>
-                  {selectedRaid.createdAt
-                    ? formatDistanceToNow(selectedRaid.createdAt, {
-                        addSuffix: true,
-                      })
-                    : "Time not available"}
-                </Text>
-
-                {selectedRaid.imageUrl && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedImage([{ uri: selectedRaid.imageUrl }]);
-                      setIsVisible(true);
-                    }}
-                    style={{ marginTop: 12 }}
+        {/* 👇 Paste the BottomSheet here */}
+        <BottomSheet
+          ref={sheetRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose={true}
+          onClose={closeSheet}
+          backgroundStyle={{ borderRadius: 24, backgroundColor: "#fff" }}
+        >
+          {selectedRaid ? (
+            <BottomSheetFlatList
+              data={showComments ? comments : []} // show comments if toggled
+              keyExtractor={(item, index) => item.id || index.toString()}
+              ListHeaderComponent={
+                <View
+                  style={{
+                    backgroundColor: "#f9f9f9",
+                    borderRadius: 16,
+                    padding: 16,
+                    marginBottom: 16,
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 20, fontWeight: "700", marginBottom: 6 }}
                   >
-                    <Image
-                      source={{ uri: selectedRaid.imageUrl }}
-                      style={{ width: "100%", height: 200, borderRadius: 16 }}
-                      resizeMode="cover"
-                    />
-                  </TouchableOpacity>
-                )}
+                    {selectedRaid.reportedAddress || "Unknown Location"}
+                  </Text>
 
-                {/* Toggle Comments Button */}
-                {!showComments && (
-                  <TouchableOpacity
-                    onPress={() => setShowComments(true)}
-                    style={{
-                      backgroundColor: "#007AFF",
-                      paddingVertical: 12,
-                      borderRadius: 12,
-                      alignItems: "center",
-                      marginTop: 16,
-                    }}
+                  <Text
+                    style={{ fontSize: 15, color: "#444", marginBottom: 10 }}
                   >
-                    <Text
-                      style={{ color: "#fff", fontWeight: "600", fontSize: 15 }}
+                    {selectedRaid.description || "No description available."}
+                  </Text>
+
+                  <Text style={{ color: "#999", fontSize: 13 }}>
+                    {selectedRaid.createdAt
+                      ? formatDistanceToNow(selectedRaid.createdAt, {
+                          addSuffix: true,
+                        })
+                      : "Time not available"}
+                  </Text>
+
+                  {selectedRaid.imageUrl && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelectedImage([{ uri: selectedRaid.imageUrl }]);
+                        setIsVisible(true);
+                      }}
+                      style={{ marginTop: 12 }}
                     >
-                      View Comments ({comments.length})
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            }
-            renderItem={({ item }) => {
-              const date = item.createdAt?.toDate
-                ? item.createdAt.toDate()
-                : null;
-
-              return (
-                <View style={{ flexDirection: "row", marginBottom: 16 }}>
-                  {/* Avatar */}
-                  <View
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      backgroundColor: "#e6f0ff",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 12,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {item.photoURL ? (
                       <Image
-                        source={{ uri: item.photoURL }}
-                        style={{ width: "100%", height: "100%" }}
+                        source={{ uri: selectedRaid.imageUrl }}
+                        style={{ width: "100%", height: 200, borderRadius: 16 }}
+                        resizeMode="cover"
                       />
-                    ) : (
-                      <Text style={{ fontWeight: "700", color: "#007AFF" }}>
-                        {(item.displayName || "A")[0].toUpperCase()}
-                      </Text>
-                    )}
-                  </View>
+                    </TouchableOpacity>
+                  )}
 
-                  {/* Comment Body */}
-                  <View style={{ flex: 1 }}>
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
+                  {/* Toggle Comments Button */}
+                  {!showComments && (
+                    <TouchableOpacity
+                      onPress={() => setShowComments(true)}
+                      style={{
+                        backgroundColor: "#007AFF",
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        alignItems: "center",
+                        marginTop: 16,
+                      }}
                     >
                       <Text
                         style={{
+                          color: "#fff",
                           fontWeight: "600",
-                          fontSize: 14,
-                          marginRight: 6,
+                          fontSize: 15,
                         }}
                       >
-                        {item.displayName || "Anonymous"}
+                        View Comments ({comments.length})
                       </Text>
-                      {date && (
-                        <Text style={{ color: "#999", fontSize: 12 }}>
-                          {formatDistanceToNow(date, { addSuffix: true })}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              }
+              renderItem={({ item }) => {
+                const date = item.createdAt?.toDate
+                  ? item.createdAt.toDate()
+                  : null;
+
+                return (
+                  <View style={{ flexDirection: "row", marginBottom: 16 }}>
+                    {/* Avatar */}
+                    <View
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        backgroundColor: "#e6f0ff",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 12,
+                        overflow: "hidden",
+                      }}
+                    >
+                      {item.photoURL ? (
+                        <Image
+                          source={{ uri: item.photoURL }}
+                          style={{ width: "100%", height: "100%" }}
+                        />
+                      ) : (
+                        <Text style={{ fontWeight: "700", color: "#007AFF" }}>
+                          {(item.displayName || "A")[0].toUpperCase()}
                         </Text>
                       )}
                     </View>
 
-                    <View
-                      style={{
-                        backgroundColor: "#f2f2f7",
-                        padding: 12,
-                        borderRadius: 16,
-                        marginTop: 6,
-                      }}
-                    >
-                      <Text style={{ fontSize: 14, color: "#333" }}>
-                        {item.text}
-                      </Text>
-                    </View>
+                    {/* Comment Body */}
+                    <View style={{ flex: 1 }}>
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <Text
+                          style={{
+                            fontWeight: "600",
+                            fontSize: 14,
+                            marginRight: 6,
+                          }}
+                        >
+                          {item.displayName || "Anonymous"}
+                        </Text>
+                        {date && (
+                          <Text style={{ color: "#999", fontSize: 12 }}>
+                            {formatDistanceToNow(date, { addSuffix: true })}
+                          </Text>
+                        )}
+                      </View>
 
-                    <View
-                      style={{ flexDirection: "row", marginTop: 8, gap: 24 }}
-                    >
-                      <TouchableOpacity>
-                        <Text style={{ fontSize: 13, color: "#007AFF" }}>
-                          👍 Like
+                      <View
+                        style={{
+                          backgroundColor: "#f2f2f7",
+                          padding: 12,
+                          borderRadius: 16,
+                          marginTop: 6,
+                        }}
+                      >
+                        <Text style={{ fontSize: 14, color: "#333" }}>
+                          {item.text}
                         </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity>
-                        <Text style={{ fontSize: 13, color: "#007AFF" }}>
-                          💬 Reply
-                        </Text>
-                      </TouchableOpacity>
+                      </View>
+
+                      <View
+                        style={{ flexDirection: "row", marginTop: 8, gap: 24 }}
+                      >
+                        <TouchableOpacity>
+                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
+                            👍 Like
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
+                            💬 Reply
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
-                </View>
-              );
-            }}
-            ListFooterComponent={
-              showComments && (
-                <KeyboardAvoidingView
-                  behavior={Platform.OS === "ios" ? "padding" : "height"}
-                  style={{ paddingVertical: 12 }}
-                >
-                  <TextInput
-                    placeholder="Write a comment..."
-                    value={commentText}
-                    onChangeText={setCommentText}
-                    mode="outlined"
-                    right={<TextInput.Icon icon="send" onPress={postComment} />}
-                    style={{
-                      marginTop: 12,
-                      borderRadius: 12,
-                      backgroundColor: "#f9f9f9",
-                    }}
-                  />
-                </KeyboardAvoidingView>
-              )
-            }
-            contentContainerStyle={{ padding: 16 }}
-          />
-        ) : (
-          <View style={{ padding: 16 }}>
-            <Text style={{ color: "#666" }}>Select a raid to see details</Text>
-          </View>
-        )}
-      </BottomSheet>
-    </View>
+                );
+              }}
+              ListFooterComponent={
+                showComments && (
+                  <View style={{ paddingVertical: 12 }}>
+                    <TextInput
+                      placeholder="Write a comment..."
+                      value={commentText}
+                      onChangeText={setCommentText}
+                      mode="outlined"
+                      right={
+                        <TextInput.Icon icon="send" onPress={postComment} />
+                      }
+                      style={{
+                        marginTop: 12,
+                        borderRadius: 12,
+                        backgroundColor: "#f9f9f9",
+                      }}
+                    />
+                  </View>
+                )
+              }
+              contentContainerStyle={{ padding: 16 }}
+            />
+          ) : (
+            <View style={{ padding: 16 }}>
+              <Text style={{ color: "#666" }}>
+                Select a raid to see details
+              </Text>
+            </View>
+          )}
+        </BottomSheet>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 

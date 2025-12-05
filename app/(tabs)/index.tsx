@@ -54,7 +54,6 @@ const ProductsPage = () => {
           "https://lamigra-backend.onrender.com/api/products"
         );
         const data = await res.json();
-
         setProducts((prev) => {
           const newData = JSON.stringify(data);
           const oldData = JSON.stringify(prev);
@@ -152,7 +151,11 @@ const ProductsPage = () => {
           ) : (
             <TouchableOpacity
               onPress={() => setActiveVideo(item.id)}
-              style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
               <Image
                 source={{
@@ -183,7 +186,9 @@ const ProductsPage = () => {
           <Text style={{ color: "#4b5563", marginBottom: 6 }}>
             {item.description}
           </Text>
-          <Text style={{ color: "#0d99b6", fontWeight: "bold", marginBottom: 8 }}>
+          <Text
+            style={{ color: "#0d99b6", fontWeight: "bold", marginBottom: 8 }}
+          >
             {item.price}
           </Text>
 
@@ -191,7 +196,9 @@ const ProductsPage = () => {
           {comments.length > 0 && (
             <TouchableOpacity onPress={() => toggleComments(item.id)}>
               <Text style={{ color: "#0d99b6", marginBottom: 8 }}>
-                {showComments ? "Hide comments" : `View all ${comments.length} comments`}
+                {showComments
+                  ? "Hide comments"
+                  : `View all ${comments.length} comments`}
               </Text>
             </TouchableOpacity>
           )}
@@ -293,7 +300,9 @@ const ProductsPage = () => {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0d99b6" />
-        <Text style={{ marginTop: 10, color: "#4b5563" }}>Loading products...</Text>
+        <Text style={{ marginTop: 10, color: "#4b5563" }}>
+          Loading products...
+        </Text>
       </View>
     );
   }
@@ -304,42 +313,76 @@ const ProductsPage = () => {
       <Appbar.Header>
         <Appbar.Content
           title={
-            <Text style={{ color: "white", fontWeight: "bold" }}>
-              LAMIGRA VIDEO STORE
-            </Text>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
+              <Image
+                source={require("../../assets/images/logo1.png")}
+                style={{ width: 120, height: 120, marginLeft: 15 }}
+              />
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Text variant="headlineMedium" style={{ color: "white" }}>
+                  LAMIGRA
+                </Text>
+              </View>
+            </View>
           }
         />
         <Appbar.Action icon="home" onPress={() => router.push("/")} />
-        <Appbar.Action icon="cart" onPress={() => router.push("/cart")} />
+        <Appbar.Action
+          icon="hand-heart"
+          onPress={() => router.push("/donate")}
+        />
         <Appbar.Action icon="account" onPress={() => router.push("/profile")} />
       </Appbar.Header>
 
       {/* Banner */}
       {bannerVisible && (
-        <Banner
-          visible={bannerVisible}
-          icon="sale"
-          style={{
-            backgroundColor: "#ecfccb",
-            borderColor: "#65a30d",
-            borderWidth: 1,
-            borderRadius: 12,
-            margin: 16,
-          }}
-          actions={[
-            { label: "Dismiss", onPress: () => setBannerVisible(false) },
-          ]}
-        >
-          <Text
-            variant="titleMedium"
-            style={{ color: "#365314", fontWeight: "bold", marginBottom: 4 }}
-          >
-            🎥 Explore Product Videos
-          </Text>
-          <Text variant="bodyMedium" style={{ color: "#3f6212" }}>
-            Watch reviews and demos before you buy — real visuals, real products!
-          </Text>
-        </Banner>
+<Banner
+  visible={bannerVisible}
+  icon="fire"
+  style={{
+    backgroundColor: "#fefce8",
+    borderRadius: 14,
+    margin: 16,
+    paddingVertical: 10,
+    elevation: 2,
+  }}
+  actions={[
+    { label: "Dismiss", onPress: () => setBannerVisible(false) },
+  ]}
+>
+  <View style={{ flexDirection: "column", gap: 4 }}>
+    <Text
+      variant="titleSmall"
+      style={{
+        color: "#713f12",
+        fontWeight: "700",
+        fontSize: 16,
+      }}
+    >
+      🔥 Trending Videos From Our Community
+    </Text>
+
+    <Text
+      variant="bodySmall"
+      style={{
+        color: "#854d0e",
+        lineHeight: 18,
+      }}
+    >
+      Discover the latest posts powered by #LaMigraApp 🚀  
+      Explore, support, and share with the community.
+    </Text>
+  </View>
+</Banner>
+
       )}
 
       {/* Products */}
