@@ -130,7 +130,7 @@ const ProfilePage = () => {
             >
               <Image
                 source={require("../../assets/images/logo1.png")}
-                style={{ width: 120, height: 120, marginLeft: 15 }}
+                style={{ width: 100, height: 50, marginLeft: 10 }}
               />
               <View
                 style={{

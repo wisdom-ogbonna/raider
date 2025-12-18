@@ -35,6 +35,7 @@ import { KeyboardAvoidingView } from "react-native";
 import { addDoc, serverTimestamp } from "firebase/firestore";
 import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import RaidReportForm from "../../components/RaidReportForm";
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
 const API_URL = "https://lamigra-backend.onrender.com/api/report-raid";
@@ -84,6 +85,7 @@ const IceReporter = () => {
   const sheetUnsubscribeRef = useRef(null);
   const [showComments, setShowComments] = useState(false);
   const [reporting, setReporting] = useState(false); // ✅ New loading state
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const raidQuery = query(
@@ -258,7 +260,7 @@ const IceReporter = () => {
       return;
     }
     try {
-      setReporting(true); // ✅ Start loading
+      setReporting(true); 
 
       const token = await user.getIdToken();
       const formData = new FormData();
@@ -321,6 +323,22 @@ const IceReporter = () => {
     >
       <View style={styles.container}>
         <View style={styles.mapWrapper}>
+          <TouchableOpacity
+            onPress={() => setShowForm(!showForm)}
+            style={{
+              position: "absolute",
+              top: 50,
+              right: 20,
+              backgroundColor: "#007AFF",
+              padding: 12,
+              borderRadius: 10,
+              zIndex: 999,
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "600" }}>
+              {showForm ? "Hide Form" : "Report Raid"}
+            </Text>
+          </TouchableOpacity>
           <MapView
             ref={mapRef}
             style={styles.map}
@@ -376,143 +394,27 @@ const IceReporter = () => {
         </View>
 
         {/* Live Address Display */}
-        <KeyboardAwareScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 150, paddingHorizontal: 10 }}
-          extraScrollHeight={150} // 👈 Pushes content up more when keyboard appears
-          enableOnAndroid={true}
-          keyboardOpeningTime={0}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View>
-            {/* Live Address Display */}
-            {reportedAddress ? (
-              <View style={{ padding: 10 }}>
-                <Text style={{ fontSize: 16, fontWeight: "600" }}>
-                  {t("iceReporter.selectedAddress")}
-                </Text>
-                <Text style={{ color: "#555" }}>{reportedAddress}</Text>
-              </View>
-            ) : (
-              <Text style={{ padding: 10, color: "#888" }}>
-                {t("iceReporter.fetchingAddress")}
-              </Text>
-            )}
-
-            {/* Description Input */}
-            <TextInput
-              label={t("iceReporter.describeRaid")}
-              value={description}
-              onChangeText={setDescription}
-              style={styles.input}
-              multiline
-              mode="outlined"
-              outlineColor="#E0E4EA"
-              activeOutlineColor="#007AFF"
-              placeholderTextColor="#888"
-            />
-
-            {/* Category Dropdown */}
-            <View style={styles.categoryContainer}>
-              <Text style={styles.categoryLabel}>Category</Text>
-              <Button
-                mode="outlined"
-                onPress={() => setMenuVisible(true)}
-                style={styles.categoryButton}
-                contentStyle={styles.categoryButtonContent}
-                labelStyle={styles.categoryButtonLabel}
-              >
-                {selectedCategory.label}
-              </Button>
-
-              <Menu
-                visible={menuVisible}
-                onDismiss={() => setMenuVisible(false)}
-                anchor={
-                  <View style={{ width: "100%", alignItems: "center" }}>
-                    <Text></Text>
-                  </View>
-                }
-                style={[styles.categoryMenu, { alignSelf: "center" }]}
-              >
-                {categoryOptions.map((option) => (
-                  <Menu.Item
-                    key={option.value}
-                    onPress={() => {
-                      setSelectedCategory(option);
-                      setCategory(option.value);
-                      setMenuVisible(false);
-                    }}
-                    title={option.label}
-                    titleStyle={[
-                      styles.menuItemTitle,
-                      option.value === selectedCategory.value &&
-                        styles.menuItemTitleSelected,
-                    ]}
-                    style={[
-                      styles.menuItem,
-                      option.value === selectedCategory.value &&
-                        styles.menuItemSelected,
-                    ]}
-                  />
-                ))}
-              </Menu>
-            </View>
-
-            {/* Pick Image */}
-            <Button
-              mode="contained"
-              onPress={pickImage}
-              style={styles.button}
-              contentStyle={styles.buttonContent}
-              labelStyle={styles.buttonLabel}
-            >
-              {image
-                ? t("iceReporter.changeImage")
-                : t("iceReporter.pickImage")}
-            </Button>
-
-            {image && (
-              <TouchableOpacity
-                onPress={() => {
-                  setSelectedImage([{ uri: image.uri }]);
-                  setIsVisible(true);
-                }}
-              >
-                <Image
-                  source={{ uri: image.uri }}
-                  style={styles.previewImage}
-                />
-              </TouchableOpacity>
-            )}
-
-            {/* Submit */}
-            <Button
-              mode="contained"
-              onPress={reportRaid}
-              style={styles.button}
-              contentStyle={styles.buttonContent}
-              labelStyle={styles.buttonLabel}
-              disabled={reporting} // Prevent double submissions
-            >
-              {reporting ? (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
-                  <Text style={{ color: "#fff" }}>Submitting...</Text>
-                </View>
-              ) : (
-                t("iceReporter.reportRaid") // Normal button text
-              )}
-            </Button>
-          </View>
-        </KeyboardAwareScrollView>
+        {showForm && (
+          <RaidReportForm
+            description={description}
+            setDescription={setDescription}
+            reportedAddress={reportedAddress}
+            pickImage={pickImage}
+            image={image}
+            selectedCategory={selectedCategory}
+            categoryOptions={categoryOptions}
+            menuVisible={menuVisible}
+            setMenuVisible={setMenuVisible}
+            setSelectedCategory={setSelectedCategory}
+            setCategory={setCategory}
+            reportRaid={reportRaid}
+            reporting={reporting}
+            selectedImage={selectedImage}
+            setSelectedImage={setSelectedImage}
+            setIsVisible={setIsVisible}
+            t={t}
+          />
+        )}
 
         <ImageViewing
           images={selectedImage || []}
