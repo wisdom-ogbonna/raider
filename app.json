@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "LaMigraApp",
+    "name": "La Migra App",
     "slug": "Iceraider",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfa`ceStyle": "automatic",
     "newArchEnabnled": true,
     "ios": {
       "supportsTablet": true,

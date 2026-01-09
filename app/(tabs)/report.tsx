@@ -86,6 +86,8 @@ const IceReporter = () => {
   const [showComments, setShowComments] = useState(false);
   const [reporting, setReporting] = useState(false); // ✅ New loading state
   const [showForm, setShowForm] = useState(false);
+  const [sourceLink, setSourceLink] = useState("");
+  const [carPlateNumber, setCarPlateNumber] = useState("");
 
   useEffect(() => {
     const raidQuery = query(
@@ -260,7 +262,7 @@ const IceReporter = () => {
       return;
     }
     try {
-      setReporting(true); 
+      setReporting(true);
 
       const token = await user.getIdToken();
       const formData = new FormData();
@@ -270,6 +272,8 @@ const IceReporter = () => {
       formData.append("radius", radius);
       formData.append("reportedAddress", reportedAddress);
       formData.append("category", selectedCategory.value);
+      formData.append("sourceLink", sourceLink);
+      formData.append("carPlateNumber", carPlateNumber);
 
       if (image) {
         const localUri = image.uri;
@@ -413,6 +417,10 @@ const IceReporter = () => {
             setSelectedImage={setSelectedImage}
             setIsVisible={setIsVisible}
             t={t}
+            sourceLink={sourceLink}
+            setSourceLink={setSourceLink}
+            carPlateNumber={carPlateNumber}
+            setCarPlateNumber={setCarPlateNumber}
           />
         )}
 
