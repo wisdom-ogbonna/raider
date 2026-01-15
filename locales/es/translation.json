@@ -71,7 +71,11 @@
     "errorLoadingRaids": "No se pudieron cargar los reportes. Por favor, inténtalo de nuevo.",
     "success": "Éxito",
     "commentAdded": "¡Comentario agregado!",
-    "failedToAddComment": "No se pudo agregar el comentario."
+    "failedToAddComment": "No se pudo agregar el comentario.",
+    "comment": "Comentario",
+    "writeComment": "Escribir un comentario...",
+    "viewComments": "Ver comentarios",
+    "like": "Me gusta"
   },
   "donate": {
     "supportTitle": "Apoya Esta App",

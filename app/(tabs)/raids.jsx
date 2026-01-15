@@ -329,8 +329,10 @@ const RaidPage = () => {
                     >
                       <Text style={{ color: "#0d99b6", fontWeight: "500" }}>
                         {showComments
-                          ? "Hide comments"
-                          : `View all ${comments.length} comments`}
+                          ? t("raidPage.hideComments")
+                          : `${t("raidPage.viewComments")} (${
+                              comments.length
+                            })`}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -420,7 +422,7 @@ const RaidPage = () => {
                           paddingVertical: 8,
                           fontSize: 14,
                         }}
-                        placeholder="Write a comment..."
+                        placeholder={t("raidPage.commentPlaceholder")}
                         value={commentTexts[raid.id] || ""}
                         onChangeText={(text) =>
                           handleCommentTextChange(raid.id, text)
@@ -450,7 +452,9 @@ const RaidPage = () => {
                       color="#0d99b6"
                     />
                     <Text style={{ marginLeft: 5, color: "#0d99b6" }}>
-                      {visibleCommentInputs[raid.id] ? "Cancel" : "Comment"}
+                      {visibleCommentInputs[raid.id]
+                        ? t("cancel")
+                        : t("raidPage.comment")}
                     </Text>
                   </TouchableOpacity>
                 </View>

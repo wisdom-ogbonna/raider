@@ -8,6 +8,8 @@ import {
   Menu,
 } from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function RaidReportForm({
   description,
@@ -97,43 +99,42 @@ export default function RaidReportForm({
           placeholder="ABC-123-XY"
         />
 
-{/* Category Dropdown */}
-<View style={{ marginVertical: 10 }}>
-  <Menu
-    visible={menuVisible}
-    onDismiss={() => setMenuVisible(false)}
-    anchor={
-      <TouchableOpacity onPress={() => setMenuVisible(true)}>
-        <View pointerEvents="none">
-          <TextInput
-            label="Category"
-            value={selectedCategory.label}
-            mode="outlined"
-            outlineColor="#E0E4EA"
-            activeOutlineColor="#007AFF"
-            style={{ backgroundColor: "#fff" }}
-            right={<TextInput.Icon icon="chevron-down" />}
-          />
+        {/* Category Dropdown */}
+        <View style={{ marginVertical: 10 }}>
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={
+              <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                <View style={ui.categoryInput}>
+                  {selectedCategory?.icon && (
+                    <Image
+                      source={selectedCategory.icon}
+                      style={ui.categoryIcon}
+                    />
+                  )}
+                  <Text style={ui.categoryText}>
+                    {selectedCategory?.label || "Select Category"}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#666" />
+                </View>
+              </TouchableOpacity>
+            }
+            contentStyle={ui.menuContainer}
+          >
+            {categoryOptions.map((option) => (
+              <Menu.Item
+                key={option.value}
+                onPress={() => {
+                  setSelectedCategory(option);
+                  setCategory(option.value);
+                  setMenuVisible(false);
+                }}
+                title={option.label} // ✅ Title is now a string
+              />
+            ))}
+          </Menu>
         </View>
-      </TouchableOpacity>
-    }
-  >
-    {categoryOptions.map((option) => (
-      <Menu.Item
-        key={option.value}
-        title={option.label}
-        onPress={() => {
-          setSelectedCategory(option);
-          setCategory(option.value);
-          setMenuVisible(false);
-        }}
-      />
-    ))}
-  </Menu>
-</View>
-
-
-
 
         {/* Pick Image */}
         <Button
@@ -212,3 +213,43 @@ export default function RaidReportForm({
     </KeyboardAwareScrollView>
   );
 }
+const ui = StyleSheet.create({
+  categoryInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  categoryIcon: {
+    width: 26,
+    height: 26,
+    marginRight: 12,
+  },
+  categoryText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#111",
+  },
+  menuContainer: {
+    borderRadius: 16,
+    paddingVertical: 6,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  menuIcon: {
+    width: 28,
+    height: 28,
+    marginRight: 14,
+  },
+  menuLabel: {
+    fontSize: 15,
+    fontWeight: "500",
+  },
+});

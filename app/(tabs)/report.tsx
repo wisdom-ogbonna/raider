@@ -65,13 +65,34 @@ const IceReporter = () => {
   const [visible, setIsVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const categoryOptions = [
-    { label: "SOS - Getting Detained", value: "sos" },
-    { label: "Suspicious Vehicle", value: "suspicious" },
-    { label: "Checkpoint / Roadblock", value: "checkpoint" },
-    { label: "ICE Agents on sight", value: "ice_agents" },
-    { label: "Reports from others (second hand info)", value: "second_hand" },
-  ];
+const categoryOptions = [
+  {
+    label: "SOS - Getting Detained",
+    value: "sos",
+    icon: require("../../assets/icons/abandoned_vehicle.png"),
+  },
+  {
+    label: "Suspicious Vehicle",
+    value: "suspicious",
+    icon: require("../../assets/icons/law_enforcement.png"),
+  },
+  {
+    label: "Checkpoint / Roadblock",
+    value: "checkpoint",
+    icon: require("../../assets/icons/sos_emergency.png"),
+  },
+  {
+    label: "ICE Agents on sight",
+    value: "ice_agents",
+    icon: require("../../assets/icons/traffic_checkpoint.png"),
+  },
+  {
+    label: "Second-hand report",
+    value: "second_hand",
+    icon: require("../../assets/icons/unusual_vehicle.png"),
+  },
+];
+
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(categoryOptions[0]);

@@ -20,7 +20,6 @@
   "maps": "Maps",
   "reports": "Reports",
 
-
   "profile": {
     "profile": "Profile",
     "logout": "Logout",
@@ -74,7 +73,11 @@
     "errorLoadingRaids": "Failed to load raids. Please try again.",
     "success": "Success",
     "commentAdded": "Comment added!",
-    "failedToAddComment": "Failed to add comment."
+    "failedToAddComment": "Failed to add comment.",
+    "comment": "Comment",
+    "writeComment": "Write a comment...",
+    "viewComments": "View Comments",
+    "like": "Like"
   },
   "donate": {
     "donate": "Donate",
