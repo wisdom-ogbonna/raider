@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Image, TouchableOpacity } from "react-native";
+import { View, Image, TouchableOpacity, StyleSheet } from "react-native";
 import {
   Text,
   TextInput,
@@ -8,7 +8,6 @@ import {
   Menu,
 } from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function RaidReportForm({
@@ -21,7 +20,6 @@ export default function RaidReportForm({
   categoryOptions,
   menuVisible,
   setMenuVisible,
-  categoryAnchorRef,
   setSelectedCategory,
   setCategory,
   reportRaid,
@@ -56,7 +54,7 @@ export default function RaidReportForm({
           </View>
         ) : (
           <Text style={{ padding: 10, color: "#888" }}>
-            {t("iceReporter.fetchingAddress")}
+            {t("iceReporter.fetchingAddress", "Fetching address...")}
           </Text>
         )}
 
@@ -73,70 +71,70 @@ export default function RaidReportForm({
           mode="outlined"
           outlineColor="#E0E4EA"
           activeOutlineColor="#007AFF"
+          placeholder={t("iceReporter.describeRaid")}
           placeholderTextColor="#888"
         />
+
         {/* Source Link Input */}
         <TextInput
-          label="Source Link (optional)"
+          label={t("iceReporter.sourceLink", "Source Link (optional)")}
           value={sourceLink}
           onChangeText={setSourceLink}
           style={{ marginVertical: 10, backgroundColor: "#fff" }}
           mode="outlined"
           outlineColor="#E0E4EA"
           activeOutlineColor="#007AFF"
-          placeholder="https://facebook.com/post..."
+          placeholder={t("iceReporter.sourceLinkPlaceholder", "https://facebook.com/post...")}
         />
 
         {/* Car Plate Number Input */}
         <TextInput
-          label="Car Plate Number (optional)"
+          label={t("iceReporter.carPlateNumber", "Car Plate Number (optional)")}
           value={carPlateNumber}
           onChangeText={setCarPlateNumber}
           style={{ marginVertical: 10, backgroundColor: "#fff" }}
           mode="outlined"
           outlineColor="#E0E4EA"
           activeOutlineColor="#007AFF"
-          placeholder="ABC-123-XY"
+          placeholder={t("iceReporter.carPlateNumberPlaceholder", "ABC-123-XY")}
         />
 
         {/* Category Dropdown */}
-{/* Category Dropdown */}
-<View style={{ marginVertical: 10 }}>
-  <Menu
-    visible={menuVisible}
-    onDismiss={() => setMenuVisible(false)}
-    anchor={
-      <TouchableOpacity onPress={() => setMenuVisible(true)}>
-        <View style={ui.categoryInput}>
-          {selectedCategory?.icon && (
-            <Image source={selectedCategory.icon} style={ui.categoryIcon} />
-          )}
-          <Text style={ui.categoryText}>
-            {selectedCategory?.label || "Select Category"}
-          </Text>
-          <Ionicons name="chevron-down" size={22} color="#666" />
+        <View style={{ marginVertical: 10 }}>
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={
+              <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                <View style={ui.categoryInput}>
+                  {selectedCategory?.icon && (
+                    <Image source={selectedCategory.icon} style={ui.categoryIcon} />
+                  )}
+                  <Text style={ui.categoryText}>
+                    {selectedCategory?.label || t("iceReporter.selectCategory", "Select Category")}
+                  </Text>
+                  <Ionicons name="chevron-down" size={22} color="#666" />
+                </View>
+              </TouchableOpacity>
+            }
+            contentStyle={ui.menuContainer}
+          >
+            {categoryOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={ui.menuItemContainer}
+                onPress={() => {
+                  setSelectedCategory(option);
+                  setCategory(option.value);
+                  setMenuVisible(false);
+                }}
+              >
+                {option.icon && <Image source={option.icon} style={ui.menuIcon} />}
+                <Text style={ui.menuLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </Menu>
         </View>
-      </TouchableOpacity>
-    }
-    contentStyle={ui.menuContainer}
-  >
-    {categoryOptions.map((option) => (
-      <TouchableOpacity
-        key={option.value}
-        style={ui.menuItemContainer}
-        onPress={() => {
-          setSelectedCategory(option);
-          setCategory(option.value);
-          setMenuVisible(false);
-        }}
-      >
-        {option.icon && <Image source={option.icon} style={ui.menuIcon} />}
-        <Text style={ui.menuLabel}>{option.label}</Text>
-      </TouchableOpacity>
-    ))}
-  </Menu>
-</View>
-
 
         {/* Pick Image */}
         <Button
@@ -205,7 +203,7 @@ export default function RaidReportForm({
               }}
             >
               <ActivityIndicator color="#fff" style={{ marginRight: 10 }} />
-              <Text style={{ color: "#fff" }}>Submitting...</Text>
+              <Text style={{ color: "#fff" }}>{t("iceReporter.submitting", "Submitting...")}</Text>
             </View>
           ) : (
             t("iceReporter.reportRaid")
@@ -215,6 +213,7 @@ export default function RaidReportForm({
     </KeyboardAwareScrollView>
   );
 }
+
 const ui = StyleSheet.create({
   categoryInput: {
     flexDirection: "row",

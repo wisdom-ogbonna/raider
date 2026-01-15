@@ -28,6 +28,18 @@
     "reportedOn": "Reportado el",
     "address": "Dirección"
   },
+
+    "productsPage": {
+    "loadingProducts": "Cargando productos...",
+    "viewAllComments": "Ver los {{count}} comentarios",
+    "hideComments": "Ocultar comentarios",
+    "writeComment": "Escribe un comentario...",
+    "comment": "Comentario",
+    "cancel": "Cancelar",
+    "dismiss": "Cerrar",
+    "trendingBannerTitle": "🔥 Videos Destacados de Nuestra Comunidad",
+    "trendingBannerDescription": "Descubre las últimas publicaciones impulsadas por #LaMigraApp 🚀 Explora, apoya y comparte con la comunidad."
+  },
   "index": {
     "dismiss": "Descartar",
     "bannerTitle": "Alertas importantes, consejos y anuncios",
@@ -71,7 +83,14 @@
     "suspiciousVehicle": "Vehículo sospechoso",
     "checkpointRoadblock": "Punto de control / Retén",
     "iceAgentsOnSight": "Agentes de ICE a la vista",
-    "secondHandReport": "Reporte de segunda mano"
+    "secondHandReport": "Reporte de segunda mano",
+    "fetchingAddress": "Obteniendo dirección...",
+    "sourceLink": "Enlace de fuente (opcional)",
+    "sourceLinkPlaceholder": "https://facebook.com/post...",
+    "carPlateNumber": "Número de placa (opcional)",
+    "carPlateNumberPlaceholder": "ABC-123-XY",
+    "selectCategory": "Seleccione categoría",
+    "submitting": "Enviando..."
   },
   "raidPage": {
     "latestReports": "Reportes Recientes",

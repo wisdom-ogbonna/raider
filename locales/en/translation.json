@@ -29,7 +29,17 @@
     "reportedOn": "Reported on",
     "address": "Address"
   },
-
+  "productsPage": {
+    "loadingProducts": "Loading products...",
+    "viewAllComments": "View all {{count}} comments",
+    "hideComments": "Hide comments",
+    "writeComment": "Write a comment...",
+    "comment": "Comment",
+    "cancel": "Cancel",
+    "dismiss": "Dismiss",
+    "trendingBannerTitle": "🔥 Trending Videos From Our Community",
+    "trendingBannerDescription": "Discover the latest posts powered by #LaMigraApp 🚀 Explore, support, and share with the community."
+  },
   "index": {
     "dismiss": "Dismiss",
     "bannerTitle": "Important alerts, tips, and announcements",
@@ -73,7 +83,14 @@
     "suspiciousVehicle": "Suspicious Vehicle",
     "checkpointRoadblock": "Checkpoint / Roadblock",
     "iceAgentsOnSight": "ICE Agents on sight",
-    "secondHandReport": "Second-hand report"
+    "secondHandReport": "Second-hand report",
+      "fetchingAddress": "Fetching address...",
+  "sourceLink": "Source Link (optional)",
+  "sourceLinkPlaceholder": "https://facebook.com/post...",
+  "carPlateNumber": "Car Plate Number (optional)",
+  "carPlateNumberPlaceholder": "ABC-123-XY",
+  "selectCategory": "Select Category",
+  "submitting": "Submitting..."
   },
   "raidPage": {
     "latestReports": "Latest Reports",

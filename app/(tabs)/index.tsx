@@ -1,3 +1,4 @@
+// index.tsx
 import React, { useState, useEffect, useContext } from "react";
 import {
   View,
@@ -6,12 +7,10 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
-  ScrollView,
 } from "react-native";
 import {
   Card,
   Text,
-  Button,
   Appbar,
   Avatar,
   IconButton,
@@ -31,23 +30,25 @@ import {
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { AuthContext } from "../../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const ProductsPage = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user } = useContext(AuthContext);
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeVideo, setActiveVideo] = useState(null);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [commentsByProduct, setCommentsByProduct] = useState({});
   const [visibleComments, setVisibleComments] = useState({});
   const [visibleCommentInputs, setVisibleCommentInputs] = useState({});
   const [commentTexts, setCommentTexts] = useState({});
   const [bannerVisible, setBannerVisible] = useState(true);
 
-  // Fetch products from backend every 10s
+  // Fetch products every 10s
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timer;
     const fetchProducts = async () => {
       try {
         const res = await fetch(
@@ -57,17 +58,14 @@ const ProductsPage = () => {
         setProducts((prev) => {
           const newData = JSON.stringify(data);
           const oldData = JSON.stringify(prev);
-          if (newData !== oldData) return data;
-          return prev;
+          return newData !== oldData ? data : prev;
         });
-
         setLoading(false);
       } catch (err) {
         console.error("Error fetching products:", err);
         setLoading(false);
       }
     };
-
     fetchProducts();
     interval = setInterval(fetchProducts, 10000);
     return () => clearInterval(interval);
@@ -75,14 +73,12 @@ const ProductsPage = () => {
 
   // Real-time comments listener
   useEffect(() => {
-    const unsubscribers = [];
-
-    products.forEach((product) => {
+    const unsubscribers: any[] = [];
+    products.forEach((product: any) => {
       const commentsQuery = query(
         collection(db, `products/${product.id}/comments`),
         orderBy("createdAt", "asc")
       );
-
       const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
         setCommentsByProduct((prev) => ({
           ...prev,
@@ -92,23 +88,18 @@ const ProductsPage = () => {
           })),
         }));
       });
-
       unsubscribers.push(unsubscribe);
     });
-
     return () => unsubscribers.forEach((u) => u());
   }, [products]);
 
-  const toggleComments = (id) =>
+  const toggleComments = (id: string) =>
     setVisibleComments((prev) => ({ ...prev, [id]: !prev[id] }));
-
-  const toggleCommentInput = (id) =>
+  const toggleCommentInput = (id: string) =>
     setVisibleCommentInputs((prev) => ({ ...prev, [id]: !prev[id] }));
-
-  const handleCommentTextChange = (id, text) =>
+  const handleCommentTextChange = (id: string, text: string) =>
     setCommentTexts((prev) => ({ ...prev, [id]: text }));
-
-  const handleCommentSubmit = async (id) => {
+  const handleCommentSubmit = async (id: string) => {
     const text = commentTexts[id]?.trim();
     if (!text) return;
 
@@ -116,7 +107,8 @@ const ProductsPage = () => {
       await addDoc(collection(db, `products/${id}/comments`), {
         text,
         createdAt: serverTimestamp(),
-        commentedBy: user?.displayName || user?.email || "Anonymous",
+        commentedBy:
+          user?.displayName || user?.email || t("iceReporter.anonymous"),
         photoURL: user?.photoURL || null,
       });
       setCommentTexts((prev) => ({ ...prev, [id]: "" }));
@@ -125,7 +117,7 @@ const ProductsPage = () => {
     }
   };
 
-  const renderProduct = ({ item }) => {
+  const renderProduct = ({ item }: any) => {
     const comments = commentsByProduct[item.id] || [];
     const showComments = visibleComments[item.id];
 
@@ -139,23 +131,19 @@ const ProductsPage = () => {
           elevation: 4,
         }}
       >
-        {/* 🎬 Video / Thumbnail */}
+        {/* Video / Thumbnail */}
         <View style={{ height: 220, backgroundColor: "#000" }}>
           {activeVideo === item.id ? (
             <YoutubePlayer
               height={220}
-              play={true}
+              play
               videoId={item.youtubeId}
               onError={(e) => console.error("YouTube error:", e)}
             />
           ) : (
             <TouchableOpacity
               onPress={() => setActiveVideo(item.id)}
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
+              style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
             >
               <Image
                 source={{
@@ -186,9 +174,7 @@ const ProductsPage = () => {
           <Text style={{ color: "#4b5563", marginBottom: 6 }}>
             {item.description}
           </Text>
-          <Text
-            style={{ color: "#0d99b6", fontWeight: "bold", marginBottom: 8 }}
-          >
+          <Text style={{ color: "#0d99b6", fontWeight: "bold", marginBottom: 8 }}>
             {item.price}
           </Text>
 
@@ -197,15 +183,15 @@ const ProductsPage = () => {
             <TouchableOpacity onPress={() => toggleComments(item.id)}>
               <Text style={{ color: "#0d99b6", marginBottom: 8 }}>
                 {showComments
-                  ? "Hide comments"
-                  : `View all ${comments.length} comments`}
+                  ? t("productsPage.hideComments")
+                  : t("productsPage.viewAllComments", { count: comments.length })}
               </Text>
             </TouchableOpacity>
           )}
 
           {/* Show comments */}
           {showComments &&
-            comments.map((comment) => (
+            comments.map((comment: any) => (
               <View
                 key={comment.id}
                 style={{
@@ -262,13 +248,8 @@ const ProductsPage = () => {
                 <Avatar.Text size={32} label={user?.displayName?.[0] || "A"} />
               )}
               <TextInput
-                style={{
-                  flex: 1,
-                  marginHorizontal: 8,
-                  paddingVertical: 8,
-                  fontSize: 14,
-                }}
-                placeholder="Write a comment..."
+                style={{ flex: 1, marginHorizontal: 8, paddingVertical: 8, fontSize: 14 }}
+                placeholder={t("productsPage.writeComment")}
                 value={commentTexts[item.id] || ""}
                 onChangeText={(text) => handleCommentTextChange(item.id, text)}
               />
@@ -288,7 +269,7 @@ const ProductsPage = () => {
           >
             <Ionicons name="chatbubble-outline" size={20} color="#0d99b6" />
             <Text style={{ marginLeft: 5, color: "#0d99b6" }}>
-              {visibleCommentInputs[item.id] ? "Cancel" : "Comment"}
+              {visibleCommentInputs[item.id] ? t("productsPage.cancel") : t("productsPage.comment")}
             </Text>
           </TouchableOpacity>
         </Card.Content>
@@ -301,7 +282,7 @@ const ProductsPage = () => {
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0d99b6" />
         <Text style={{ marginTop: 10, color: "#4b5563" }}>
-          Loading products...
+          {t("productsPage.loadingProducts")}
         </Text>
       </View>
     );
@@ -309,24 +290,15 @@ const ProductsPage = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
-      {/* Header */}
       <Appbar.Header>
         <Appbar.Content
           title={
-            <View
-              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-            >
+            <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
               <Image
                 source={require("../../assets/images/logo1.png")}
                 style={{ width: 100, height: 50, marginLeft: 10 }}
               />
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "flex-start",
-                }}
-              >
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "flex-start" }}>
                 <Text variant="headlineMedium" style={{ color: "white" }}>
                   LAMIGRA
                 </Text>
@@ -335,57 +307,29 @@ const ProductsPage = () => {
           }
         />
         <Appbar.Action icon="home" onPress={() => router.push("/")} />
-        <Appbar.Action
-          icon="hand-heart"
-          onPress={() => router.push("/donate")}
-        />
+        <Appbar.Action icon="hand-heart" onPress={() => router.push("/donate")} />
         <Appbar.Action icon="account" onPress={() => router.push("/profile")} />
       </Appbar.Header>
 
       {/* Banner */}
       {bannerVisible && (
-<Banner
-  visible={bannerVisible}
-  icon="fire"
-  style={{
-    backgroundColor: "#fefce8",
-    borderRadius: 14,
-    margin: 16,
-    paddingVertical: 10,
-    elevation: 2,
-  }}
-  actions={[
-    { label: "Dismiss", onPress: () => setBannerVisible(false) },
-  ]}
->
-  <View style={{ flexDirection: "column", gap: 4 }}>
-    <Text
-      variant="titleSmall"
-      style={{
-        color: "#713f12",
-        fontWeight: "700",
-        fontSize: 16,
-      }}
-    >
-      🔥 Trending Videos From Our Community
-    </Text>
-
-    <Text
-      variant="bodySmall"
-      style={{
-        color: "#854d0e",
-        lineHeight: 18,
-      }}
-    >
-      Discover the latest posts powered by #LaMigraApp 🚀  
-      Explore, support, and share with the community.
-    </Text>
-  </View>
-</Banner>
-
+        <Banner
+          visible={bannerVisible}
+          icon="fire"
+          style={{ backgroundColor: "#fefce8", borderRadius: 14, margin: 16, paddingVertical: 10, elevation: 2 }}
+          actions={[{ label: t("productsPage.dismiss"), onPress: () => setBannerVisible(false) }]}
+        >
+          <View style={{ flexDirection: "column", gap: 4 }}>
+            <Text variant="titleSmall" style={{ color: "#713f12", fontWeight: "700", fontSize: 16 }}>
+              {t("productsPage.trendingBannerTitle")}
+            </Text>
+            <Text variant="bodySmall" style={{ color: "#854d0e", lineHeight: 18 }}>
+              {t("productsPage.trendingBannerDescription")}
+            </Text>
+          </View>
+        </Banner>
       )}
 
-      {/* Products */}
       <FlatList
         data={products}
         keyExtractor={(item) => item.id}
