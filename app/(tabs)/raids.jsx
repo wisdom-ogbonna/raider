@@ -14,6 +14,10 @@ import {
   IconButton,
 } from "react-native-paper";
 import {
+  doc,
+  setDoc,
+  deleteDoc,
+  getDoc,
   collection,
   onSnapshot,
   addDoc,
@@ -39,6 +43,7 @@ const RaidPage = () => {
   const [commentsByRaid, setCommentsByRaid] = useState({});
   const [visibleComments, setVisibleComments] = useState({});
   const { t } = useTranslation();
+  const [reactionsByRaid, setReactionsByRaid] = useState({});
 
   const router = useRouter();
 
@@ -95,6 +100,30 @@ const RaidPage = () => {
     return () => unsubscribers.forEach((u) => u());
   }, [raids]);
 
+  useEffect(() => {
+    const unsubscribers = [];
+
+    raids.forEach((raid) => {
+      const reactionsRef = collection(db, `ice_raids/${raid.id}/reactions`);
+
+      const unsubscribe = onSnapshot(reactionsRef, (snapshot) => {
+        const reactions = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setReactionsByRaid((prev) => ({
+          ...prev,
+          [raid.id]: reactions,
+        }));
+      });
+
+      unsubscribers.push(unsubscribe);
+    });
+
+    return () => unsubscribers.forEach((u) => u());
+  }, [raids]);
+
   // ✅ toggle comment input bar
   const toggleCommentInput = (raidId) => {
     setVisibleCommentInputs((prev) => ({
@@ -137,6 +166,29 @@ const RaidPage = () => {
     }
   };
 
+  const handleReaction = async (raidId, type) => {
+    if (!user) return;
+
+    const reactionRef = doc(db, `ice_raids/${raidId}/reactions/${user.uid}`);
+    const existing = await getDoc(reactionRef);
+
+    if (existing.exists()) {
+      const current = existing.data().type;
+
+      // Remove reaction if same clicked again
+      if (current === type) {
+        await deleteDoc(reactionRef);
+        return;
+      }
+    }
+
+    await setDoc(reactionRef, {
+      type,
+      userId: user.uid,
+      createdAt: serverTimestamp(),
+    });
+  };
+
   if (loading || authLoading) {
     return (
       <ActivityIndicator
@@ -153,12 +205,20 @@ const RaidPage = () => {
       <Appbar.Header>
         <Appbar.Content
           title={
-            <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
               <Image
                 source={require("../../assets/images/logo.png")}
                 style={{ width: 120, height: 120, marginLeft: 15 }}
               />
-              <View style={{ flex: 1, justifyContent: "center", alignItems: "flex-start" }}>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                }}
+              >
                 <Text variant="headlineMedium" style={{ color: "white" }}>
                   LAMIGRA
                 </Text>
@@ -167,7 +227,10 @@ const RaidPage = () => {
           }
         />
         <Appbar.Action icon="home" onPress={() => router.push("/")} />
-        <Appbar.Action icon="hand-heart" onPress={() => router.push("/donate")} />
+        <Appbar.Action
+          icon="hand-heart"
+          onPress={() => router.push("/donate")}
+        />
         <Appbar.Action icon="account" onPress={() => router.push("/profile")} />
       </Appbar.Header>
 
@@ -179,6 +242,17 @@ const RaidPage = () => {
             raids.map((raid) => {
               const comments = commentsByRaid[raid.id] || [];
               const showComments = visibleComments[raid.id];
+              const reactions = reactionsByRaid[raid.id] || [];
+
+              const likes = reactions.filter((r) => r.type === "like").length;
+              const dislikes = reactions.filter(
+                (r) => r.type === "dislike"
+              ).length;
+
+              const userReaction = reactions.find(
+                (r) => r.userId === user?.uid
+              );
+
               return (
                 <View
                   key={raid.id}
@@ -194,7 +268,9 @@ const RaidPage = () => {
                   }}
                 >
                   <Text style={styles.raidText}>
-                    <Text style={styles.boldText}>{t("raidPage.address")}: </Text>
+                    <Text style={styles.boldText}>
+                      {t("raidPage.address")}:{" "}
+                    </Text>
                     {raid.reportedAddress}
                   </Text>
                   <Text style={styles.raidText}>
@@ -205,6 +281,45 @@ const RaidPage = () => {
                     <Text style={styles.boldText}>Reported By: </Text>
                     {raid.reportedByName || "Anonymous"}
                   </Text>
+
+                  {/* ✅ Like & Dislike buttons */}
+                  <View style={{ flexDirection: "row", marginTop: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => handleReaction(raid.id, "like")}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginRight: 20,
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          userReaction?.type === "like"
+                            ? "thumbs-up"
+                            : "thumbs-up-outline"
+                        }
+                        size={20}
+                        color="#0d99b6"
+                      />
+                      <Text style={{ marginLeft: 5 }}>{likes}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => handleReaction(raid.id, "dislike")}
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Ionicons
+                        name={
+                          userReaction?.type === "dislike"
+                            ? "thumbs-down"
+                            : "thumbs-down-outline"
+                        }
+                        size={20}
+                        color="red"
+                      />
+                      <Text style={{ marginLeft: 5 }}>{dislikes}</Text>
+                    </TouchableOpacity>
+                  </View>
 
                   {/* ✅ Comments toggle */}
                   {comments.length > 0 && (
@@ -233,11 +348,16 @@ const RaidPage = () => {
                           }}
                         >
                           {comment.photoURL ? (
-                            <Avatar.Image size={36} source={{ uri: comment.photoURL }} />
+                            <Avatar.Image
+                              size={36}
+                              source={{ uri: comment.photoURL }}
+                            />
                           ) : (
                             <Avatar.Text
                               size={36}
-                              label={comment.commentedBy?.[0]?.toUpperCase() || "A"}
+                              label={
+                                comment.commentedBy?.[0]?.toUpperCase() || "A"
+                              }
                             />
                           )}
                           <View
@@ -254,7 +374,13 @@ const RaidPage = () => {
                             </Text>
                             <Text style={{ fontSize: 14 }}>{comment.text}</Text>
                             {comment.createdAt?.toDate && (
-                              <Text style={{ fontSize: 12, color: "gray", marginTop: 2 }}>
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  color: "gray",
+                                  marginTop: 2,
+                                }}
+                              >
                                 {moment(comment.createdAt.toDate()).fromNow()}
                               </Text>
                             )}
@@ -277,9 +403,15 @@ const RaidPage = () => {
                       }}
                     >
                       {user?.photoURL ? (
-                        <Avatar.Image size={32} source={{ uri: user.photoURL }} />
+                        <Avatar.Image
+                          size={32}
+                          source={{ uri: user.photoURL }}
+                        />
                       ) : (
-                        <Avatar.Text size={32} label={user?.displayName?.[0] || "A"} />
+                        <Avatar.Text
+                          size={32}
+                          label={user?.displayName?.[0] || "A"}
+                        />
                       )}
                       <TextInput
                         style={{
@@ -290,7 +422,9 @@ const RaidPage = () => {
                         }}
                         placeholder="Write a comment..."
                         value={commentTexts[raid.id] || ""}
-                        onChangeText={(text) => handleCommentTextChange(raid.id, text)}
+                        onChangeText={(text) =>
+                          handleCommentTextChange(raid.id, text)
+                        }
                       />
                       <IconButton
                         icon="send"
@@ -304,9 +438,17 @@ const RaidPage = () => {
                   {/* ✅ Comment toggle button */}
                   <TouchableOpacity
                     onPress={() => toggleCommentInput(raid.id)}
-                    style={{ marginTop: 8, flexDirection: "row", alignItems: "center" }}
+                    style={{
+                      marginTop: 8,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
                   >
-                    <Ionicons name="chatbubble-outline" size={20} color="#0d99b6" />
+                    <Ionicons
+                      name="chatbubble-outline"
+                      size={20}
+                      color="#0d99b6"
+                    />
                     <Text style={{ marginLeft: 5, color: "#0d99b6" }}>
                       {visibleCommentInputs[raid.id] ? "Cancel" : "Comment"}
                     </Text>

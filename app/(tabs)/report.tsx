@@ -36,6 +36,7 @@ import { addDoc, serverTimestamp } from "firebase/firestore";
 import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import RaidReportForm from "../../components/RaidReportForm";
+import { registerForPushNotifications } from "../../utils/registerPushToken";
 
 const GOOGLE_API_KEY = "AIzaSyCtVR76BLZhF4qjFRCP3yv8FkrTnzEhR20";
 const API_URL = "https://lamigra-backend.onrender.com/api/report-raid";
@@ -177,6 +178,12 @@ const IceReporter = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      savePushTokenToServer();
+    }
+  }, [user]);
+
   // when a marker is tapped
   const handleMarkerPress = (raid) => {
     // cleanup previous listener
@@ -256,57 +263,99 @@ const IceReporter = () => {
     if (!result.canceled) setImage(result.assets[0]);
   };
 
-  const reportRaid = async () => {
-    if (!reportedAddress || !location) {
-      Alert.alert(t("iceReporter.error"), t("iceReporter.locationMissing"));
-      return;
+const reportRaid = async () => {
+  if (!reportedAddress || !location) {
+    Alert.alert(t("iceReporter.error"), t("iceReporter.locationMissing"));
+    return;
+  }
+
+  try {
+    setReporting(true);
+
+    const token = await user.getIdToken();
+    const formData = new FormData();
+    formData.append("description", description);
+    formData.append("latitude", location.latitude);
+    formData.append("longitude", location.longitude);
+    formData.append("radius", radius);
+    formData.append("reportedAddress", reportedAddress);
+    formData.append("category", selectedCategory.value);
+    formData.append("sourceLink", sourceLink);
+    formData.append("carPlateNumber", carPlateNumber);
+
+    if (image) {
+      const localUri = image.uri;
+      const filename = localUri.split("/").pop();
+      const match = /\.(\w+)$/.exec(filename ?? "");
+      const type = match ? `image/${match[1]}` : `image`;
+      const correctedUri =
+        Platform.OS === "android"
+          ? localUri
+          : localUri.replace("file://", "file:///");
+      formData.append("file", { uri: correctedUri, name: filename, type });
     }
+
+    // 1️⃣ Upload raid
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Upload failed");
+    }
+
+    await response.json();
+
+    // 2️⃣ Send push notification
+    await fetch("https://lamigra-backend.onrender.com/api/send-notification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: "🚨 Ice Raid Alert",
+        body: "An ICE raid was reported near your location.",
+      }),
+    });
+
+    Alert.alert(t("iceReporter.success"), t("iceReporter.raidReported"));
+    setDescription("");
+    setImage(null);
+  } catch (error) {
+    console.error("Upload error:", error);
+    Alert.alert(t("iceReporter.error"), error.message);
+  } finally {
+    setReporting(false);
+  }
+};
+
+
+  const savePushTokenToServer = async () => {
     try {
-      setReporting(true);
+      const pushToken = await registerForPushNotifications();
+      if (!pushToken || !user) return;
 
-      const token = await user.getIdToken();
-      const formData = new FormData();
-      formData.append("description", description);
-      formData.append("latitude", location.latitude);
-      formData.append("longitude", location.longitude);
-      formData.append("radius", radius);
-      formData.append("reportedAddress", reportedAddress);
-      formData.append("category", selectedCategory.value);
-      formData.append("sourceLink", sourceLink);
-      formData.append("carPlateNumber", carPlateNumber);
+      const response = await fetch(
+        "https://lamigra-backend.onrender.com/api/save-push-token",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user.uid,
+            pushToken: pushToken,
+          }),
+        }
+      );
 
-      if (image) {
-        const localUri = image.uri;
-        const filename = localUri.split("/").pop();
-        const match = /\.(\w+)$/.exec(filename ?? "");
-        const type = match ? `image/${match[1]}` : `image`;
-        const correctedUri =
-          Platform.OS === "android"
-            ? localUri
-            : localUri.replace("file://", "file:///");
-        formData.append("file", { uri: correctedUri, name: filename, type });
-      }
-
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` }, // ❌ DO NOT set Content-Type manually
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Upload failed");
-      }
-
-      await response.json();
-      Alert.alert(t("iceReporter.success"), t("iceReporter.raidReported"));
-      setDescription("");
-      setImage(null);
-    } catch (error) {
-      console.error("Upload error:", error);
-      Alert.alert(t("iceReporter.error"), error.message);
-    } finally {
-      setReporting(false); // ✅ Stop loading no matter what
+      const data = await response.json();
+      console.log("Push token saved:", data);
+    } catch (err) {
+      console.error("Failed to save push token", err);
     }
   };
 
