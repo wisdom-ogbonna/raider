@@ -67,27 +67,27 @@ const IceReporter = () => {
 
   const categoryOptions = [
     {
-      label: "SOS - Getting Detained",
+      label: t("iceReporter.sosGettingDetained"),
       value: "sos",
       icon: require("../../assets/icons/abandoned_vehicle.png"),
     },
     {
-      label: "Suspicious Vehicle",
+      label: t("iceReporter.suspiciousVehicle"),
       value: "suspicious",
       icon: require("../../assets/icons/law_enforcement.png"),
     },
     {
-      label: "Checkpoint / Roadblock",
+      label: t("iceReporter.checkpointRoadblock"),
       value: "checkpoint",
       icon: require("../../assets/icons/sos_emergency.png"),
     },
     {
-      label: "ICE Agents on sight",
+      label: t("iceReporter.iceAgentsOnSight"),
       value: "ice_agents",
       icon: require("../../assets/icons/traffic_checkpoint.png"),
     },
     {
-      label: "Second-hand report",
+      label: t("iceReporter.iceAgentsOnSight"),
       value: "second_hand",
       icon: require("../../assets/icons/unusual_vehicle.png"),
     },
@@ -256,7 +256,7 @@ const IceReporter = () => {
       setCommentText("");
     } catch (err) {
       console.error("Failed to post comment", err);
-      Alert.alert("Error", "Failed to post comment");
+     Alert.alert(t("iceReporter.error"), t("iceReporter.failedToPostComment"));
     }
   };
 
@@ -411,7 +411,9 @@ const IceReporter = () => {
             }}
           >
             <Text style={{ color: "#fff", fontWeight: "600" }}>
-              {showForm ? "Hide Form" : "Report Raid"}
+              {showForm
+                ? t("iceReporter.hideForm")
+                : t("iceReporter.reportRaid")}
             </Text>
           </TouchableOpacity>
           <MapView
@@ -529,13 +531,14 @@ const IceReporter = () => {
                   <Text
                     style={{ fontSize: 20, fontWeight: "700", marginBottom: 6 }}
                   >
-                    {selectedRaid.reportedAddress || "Unknown Location"}
+                    {selectedRaid.reportedAddress ||
+                      t("iceReporter.unknownLocation")}
                   </Text>
 
                   <Text
                     style={{ fontSize: 15, color: "#444", marginBottom: 10 }}
                   >
-                    {selectedRaid.description || "No description available."}
+                    {selectedRaid.description || t("iceReporter.noDescription")}
                   </Text>
 
                   <Text style={{ color: "#999", fontSize: 13 }}>
@@ -543,7 +546,7 @@ const IceReporter = () => {
                       ? formatDistanceToNow(selectedRaid.createdAt, {
                           addSuffix: true,
                         })
-                      : "Time not available"}
+                      : t("iceReporter.timeNotAvailable")}
                   </Text>
 
                   {selectedRaid.imageUrl && (
@@ -581,7 +584,7 @@ const IceReporter = () => {
                           fontSize: 15,
                         }}
                       >
-                        View Comments ({comments.length})
+                        {t("iceReporter.viewComments")} ({comments.length})
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -631,8 +634,9 @@ const IceReporter = () => {
                             marginRight: 6,
                           }}
                         >
-                          {item.displayName || "Anonymous"}
+                          {item.displayName || t("iceReporter.anonymous")}
                         </Text>
+
                         {date && (
                           <Text style={{ color: "#999", fontSize: 12 }}>
                             {formatDistanceToNow(date, { addSuffix: true })}
@@ -656,16 +660,13 @@ const IceReporter = () => {
                       <View
                         style={{ flexDirection: "row", marginTop: 8, gap: 24 }}
                       >
-                        <TouchableOpacity>
-                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
-                            👍 Like
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
-                            💬 Reply
-                          </Text>
-                        </TouchableOpacity>
+<TouchableOpacity>
+  <Text style={{ fontSize: 13, color: "#007AFF" }}>👍 {t("iceReporter.like")}</Text>
+</TouchableOpacity>
+<TouchableOpacity>
+  <Text style={{ fontSize: 13, color: "#007AFF" }}>💬 {t("iceReporter.reply")}</Text>
+</TouchableOpacity>
+
                       </View>
                     </View>
                   </View>
@@ -675,18 +676,9 @@ const IceReporter = () => {
                 showComments && (
                   <View style={{ paddingVertical: 12 }}>
                     <TextInput
-                      placeholder="Write a comment..."
+                      placeholder={t("iceReporter.writeComment")}
                       value={commentText}
                       onChangeText={setCommentText}
-                      mode="outlined"
-                      right={
-                        <TextInput.Icon icon="send" onPress={postComment} />
-                      }
-                      style={{
-                        marginTop: 12,
-                        borderRadius: 12,
-                        backgroundColor: "#f9f9f9",
-                      }}
                     />
                   </View>
                 )
