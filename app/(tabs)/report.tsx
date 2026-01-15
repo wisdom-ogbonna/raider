@@ -65,34 +65,33 @@ const IceReporter = () => {
   const [visible, setIsVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-const categoryOptions = [
-  {
-    label: "SOS - Getting Detained",
-    value: "sos",
-    icon: require("../../assets/icons/abandoned_vehicle.png"),
-  },
-  {
-    label: "Suspicious Vehicle",
-    value: "suspicious",
-    icon: require("../../assets/icons/law_enforcement.png"),
-  },
-  {
-    label: "Checkpoint / Roadblock",
-    value: "checkpoint",
-    icon: require("../../assets/icons/sos_emergency.png"),
-  },
-  {
-    label: "ICE Agents on sight",
-    value: "ice_agents",
-    icon: require("../../assets/icons/traffic_checkpoint.png"),
-  },
-  {
-    label: "Second-hand report",
-    value: "second_hand",
-    icon: require("../../assets/icons/unusual_vehicle.png"),
-  },
-];
-
+  const categoryOptions = [
+    {
+      label: "SOS - Getting Detained",
+      value: "sos",
+      icon: require("../../assets/icons/abandoned_vehicle.png"),
+    },
+    {
+      label: "Suspicious Vehicle",
+      value: "suspicious",
+      icon: require("../../assets/icons/law_enforcement.png"),
+    },
+    {
+      label: "Checkpoint / Roadblock",
+      value: "checkpoint",
+      icon: require("../../assets/icons/sos_emergency.png"),
+    },
+    {
+      label: "ICE Agents on sight",
+      value: "ice_agents",
+      icon: require("../../assets/icons/traffic_checkpoint.png"),
+    },
+    {
+      label: "Second-hand report",
+      value: "second_hand",
+      icon: require("../../assets/icons/unusual_vehicle.png"),
+    },
+  ];
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(categoryOptions[0]);
@@ -284,75 +283,77 @@ const categoryOptions = [
     if (!result.canceled) setImage(result.assets[0]);
   };
 
-const reportRaid = async () => {
-  if (!reportedAddress || !location) {
-    Alert.alert(t("iceReporter.error"), t("iceReporter.locationMissing"));
-    return;
-  }
-
-  try {
-    setReporting(true);
-
-    const token = await user.getIdToken();
-    const formData = new FormData();
-    formData.append("description", description);
-    formData.append("latitude", location.latitude);
-    formData.append("longitude", location.longitude);
-    formData.append("radius", radius);
-    formData.append("reportedAddress", reportedAddress);
-    formData.append("category", selectedCategory.value);
-    formData.append("sourceLink", sourceLink);
-    formData.append("carPlateNumber", carPlateNumber);
-
-    if (image) {
-      const localUri = image.uri;
-      const filename = localUri.split("/").pop();
-      const match = /\.(\w+)$/.exec(filename ?? "");
-      const type = match ? `image/${match[1]}` : `image`;
-      const correctedUri =
-        Platform.OS === "android"
-          ? localUri
-          : localUri.replace("file://", "file:///");
-      formData.append("file", { uri: correctedUri, name: filename, type });
+  const reportRaid = async () => {
+    if (!reportedAddress || !location) {
+      Alert.alert(t("iceReporter.error"), t("iceReporter.locationMissing"));
+      return;
     }
 
-    // 1️⃣ Upload raid
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
+    try {
+      setReporting(true);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || "Upload failed");
+      const token = await user.getIdToken();
+      const formData = new FormData();
+      formData.append("description", description);
+      formData.append("latitude", location.latitude);
+      formData.append("longitude", location.longitude);
+      formData.append("radius", radius);
+      formData.append("reportedAddress", reportedAddress);
+      formData.append("category", selectedCategory.value);
+      formData.append("sourceLink", sourceLink);
+      formData.append("carPlateNumber", carPlateNumber);
+
+      if (image) {
+        const localUri = image.uri;
+        const filename = localUri.split("/").pop();
+        const match = /\.(\w+)$/.exec(filename ?? "");
+        const type = match ? `image/${match[1]}` : `image`;
+        const correctedUri =
+          Platform.OS === "android"
+            ? localUri
+            : localUri.replace("file://", "file:///");
+        formData.append("file", { uri: correctedUri, name: filename, type });
+      }
+
+      // 1️⃣ Upload raid
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Upload failed");
+      }
+
+      await response.json();
+
+      // 2️⃣ Send push notification
+      await fetch(
+        "https://lamigra-backend.onrender.com/api/send-notification",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: "🚨 Ice Raid Alert",
+            body: "An ICE raid was reported near your location.",
+          }),
+        }
+      );
+
+      Alert.alert(t("iceReporter.success"), t("iceReporter.raidReported"));
+      setDescription("");
+      setImage(null);
+    } catch (error) {
+      console.error("Upload error:", error);
+      Alert.alert(t("iceReporter.error"), error.message);
+    } finally {
+      setReporting(false);
     }
-
-    await response.json();
-
-    // 2️⃣ Send push notification
-    await fetch("https://lamigra-backend.onrender.com/api/send-notification", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: "🚨 Ice Raid Alert",
-        body: "An ICE raid was reported near your location.",
-      }),
-    });
-
-    Alert.alert(t("iceReporter.success"), t("iceReporter.raidReported"));
-    setDescription("");
-    setImage(null);
-  } catch (error) {
-    console.error("Upload error:", error);
-    Alert.alert(t("iceReporter.error"), error.message);
-  } finally {
-    setReporting(false);
-  }
-};
-
+  };
 
   const savePushTokenToServer = async () => {
     try {
@@ -440,19 +441,21 @@ const reportRaid = async () => {
                 }}
                 onPress={() => handleMarkerPress(raid)}
               >
-                <Text style={{ fontSize: 32 }}>
-                  {raid.category === "sos"
-                    ? "🆘"
-                    : raid.category === "suspicious"
-                    ? "🚨"
-                    : raid.category === "checkpoint"
-                    ? "🚧"
-                    : raid.category === "ice_agents"
-                    ? "👮"
-                    : raid.category === "second_hand"
-                    ? "📡"
-                    : "📍"}
-                </Text>
+                {/* Find the category object */}
+                {(() => {
+                  const categoryObj = categoryOptions.find(
+                    (cat) => cat.value === raid.category
+                  );
+                  return categoryObj?.icon ? (
+                    <Image
+                      source={categoryObj.icon}
+                      style={{ width: 32, height: 32 }}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <Text style={{ fontSize: 32 }}>📍</Text> // fallback
+                  );
+                })()}
               </Marker>
             ))}
           </MapView>

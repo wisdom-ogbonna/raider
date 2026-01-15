@@ -100,46 +100,43 @@ export default function RaidReportForm({
         />
 
         {/* Category Dropdown */}
-        <View style={{ marginVertical: 10 }}>
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={
-              <TouchableOpacity onPress={() => setMenuVisible(true)}>
-                <View style={ui.categoryInput}>
-                  {selectedCategory?.icon && (
-                    <Image
-                      source={selectedCategory.icon}
-                      style={ui.categoryIcon}
-                    />
-                  )}
-                  <Text style={ui.categoryText}>
-                    {selectedCategory?.label || "Select Category"}
-                  </Text>
-                  <Ionicons name="chevron-down" size={20} color="#666" />
-                </View>
-              </TouchableOpacity>
-            }
-            contentStyle={ui.menuContainer}
-          >
-            {categoryOptions.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={ui.menuItem} // your custom menu item style
-                onPress={() => {
-                  setSelectedCategory(option);
-                  setCategory(option.value);
-                  setMenuVisible(false);
-                }}
-              >
-                {option.icon && (
-                  <Image source={option.icon} style={ui.menuIcon} />
-                )}
-                <Text style={ui.menuLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </Menu>
+{/* Category Dropdown */}
+<View style={{ marginVertical: 10 }}>
+  <Menu
+    visible={menuVisible}
+    onDismiss={() => setMenuVisible(false)}
+    anchor={
+      <TouchableOpacity onPress={() => setMenuVisible(true)}>
+        <View style={ui.categoryInput}>
+          {selectedCategory?.icon && (
+            <Image source={selectedCategory.icon} style={ui.categoryIcon} />
+          )}
+          <Text style={ui.categoryText}>
+            {selectedCategory?.label || "Select Category"}
+          </Text>
+          <Ionicons name="chevron-down" size={22} color="#666" />
         </View>
+      </TouchableOpacity>
+    }
+    contentStyle={ui.menuContainer}
+  >
+    {categoryOptions.map((option) => (
+      <TouchableOpacity
+        key={option.value}
+        style={ui.menuItemContainer}
+        onPress={() => {
+          setSelectedCategory(option);
+          setCategory(option.value);
+          setMenuVisible(false);
+        }}
+      >
+        {option.icon && <Image source={option.icon} style={ui.menuIcon} />}
+        <Text style={ui.menuLabel}>{option.label}</Text>
+      </TouchableOpacity>
+    ))}
+  </Menu>
+</View>
+
 
         {/* Pick Image */}
         <Button
@@ -222,39 +219,62 @@ const ui = StyleSheet.create({
   categoryInput: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   categoryIcon: {
-    width: 26,
-    height: 26,
+    width: 28,
+    height: 28,
     marginRight: 12,
+    resizeMode: "contain",
   },
   categoryText: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: "500",
+    fontSize: 16,
+    fontWeight: "600",
     color: "#111",
   },
   menuContainer: {
     borderRadius: 16,
-    paddingVertical: 6,
+    paddingVertical: 8,
+    backgroundColor: "#fff",
+    minWidth: 200,
+    alignSelf: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  menuItem: {
+  menuItemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginHorizontal: 8,
+    marginVertical: 4,
+    backgroundColor: "#f9f9f9",
   },
   menuIcon: {
     width: 28,
     height: 28,
-    marginRight: 14,
+    marginRight: 12,
+    resizeMode: "contain",
   },
   menuLabel: {
     fontSize: 15,
     fontWeight: "500",
+    color: "#111",
   },
 });
