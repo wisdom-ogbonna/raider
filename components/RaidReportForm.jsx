@@ -123,15 +123,20 @@ export default function RaidReportForm({
             contentStyle={ui.menuContainer}
           >
             {categoryOptions.map((option) => (
-              <Menu.Item
+              <TouchableOpacity
                 key={option.value}
+                style={ui.menuItem} // your custom menu item style
                 onPress={() => {
                   setSelectedCategory(option);
                   setCategory(option.value);
                   setMenuVisible(false);
                 }}
-                title={option.label} // ✅ Title is now a string
-              />
+              >
+                {option.icon && (
+                  <Image source={option.icon} style={ui.menuIcon} />
+                )}
+                <Text style={ui.menuLabel}>{option.label}</Text>
+              </TouchableOpacity>
             ))}
           </Menu>
         </View>
