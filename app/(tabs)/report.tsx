@@ -87,7 +87,7 @@ const IceReporter = () => {
       icon: require("../../assets/icons/traffic_checkpoint.png"),
     },
     {
-      label: t("iceReporter.iceAgentsOnSight"),
+      label: t("iceReporter.secondHandReport"),
       value: "second_hand",
       icon: require("../../assets/icons/unusual_vehicle.png"),
     },
