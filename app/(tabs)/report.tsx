@@ -14,7 +14,13 @@ import { AuthContext } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { styles } from "../../styles/IceReporter";
 import { startBackgroundLocationUpdates } from "../../utils/backgroundLocationTask.js";
-import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
+import {
+  collection,
+  query,
+  onSnapshot,
+  orderBy,
+  where,
+} from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { customMapStyle } from "../../styles/mapStyle";
 import { useTranslation } from "react-i18next";
@@ -109,10 +115,13 @@ const IceReporter = () => {
   const [showForm, setShowForm] = useState(false);
   const [sourceLink, setSourceLink] = useState("");
   const [carPlateNumber, setCarPlateNumber] = useState("");
+  const now = new Date();
 
   useEffect(() => {
     const raidQuery = query(
       collection(db, "ice_raids"),
+      where("expiresAt", ">", now),
+      orderBy("expiresAt"),
       orderBy("createdAt", "desc")
     );
     const unsubscribe = onSnapshot(
@@ -256,7 +265,7 @@ const IceReporter = () => {
       setCommentText("");
     } catch (err) {
       console.error("Failed to post comment", err);
-     Alert.alert(t("iceReporter.error"), t("iceReporter.failedToPostComment"));
+      Alert.alert(t("iceReporter.error"), t("iceReporter.failedToPostComment"));
     }
   };
 
@@ -660,13 +669,16 @@ const IceReporter = () => {
                       <View
                         style={{ flexDirection: "row", marginTop: 8, gap: 24 }}
                       >
-<TouchableOpacity>
-  <Text style={{ fontSize: 13, color: "#007AFF" }}>👍 {t("iceReporter.like")}</Text>
-</TouchableOpacity>
-<TouchableOpacity>
-  <Text style={{ fontSize: 13, color: "#007AFF" }}>💬 {t("iceReporter.reply")}</Text>
-</TouchableOpacity>
-
+                        <TouchableOpacity>
+                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
+                            👍 {t("iceReporter.like")}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
+                            💬 {t("iceReporter.reply")}
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </View>

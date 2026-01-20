@@ -7,8 +7,8 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
-  Modal,
-  ScrollView,
+  Keyboard,
+  Modal
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { CardField, useConfirmPayment } from "@stripe/stripe-react-native";
@@ -30,7 +30,7 @@ export default function DonationScreen() {
   const cardRef = useRef(null);
 
   // -----------------------
-  // 🔵 STRIPE PAYMENT
+  // 🔵 STRIPE DONATION
   // -----------------------
   const fetchClientSecret = async (cents, name, email) => {
     const response = await fetch(`${API_URL}/api/create-payment-intent`, {
@@ -38,15 +38,13 @@ export default function DonationScreen() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: cents, name, email }),
     });
-
     const data = await response.json();
     return data.clientSecret;
   };
 
   const handleCardDonate = async () => {
-    if (!name.trim()) return Alert.alert("Enter your name");
-    if (!email.trim()) return Alert.alert("Enter your email");
-    if (!amount || isNaN(amount)) return Alert.alert("Enter a valid amount");
+    if (!name.trim()) return Alert.alert("Enter Name");
+    if (!email.trim()) return Alert.alert("Enter Email");
     if (!cardComplete) return Alert.alert("Card info incomplete");
 
     setLoading(true);
@@ -54,100 +52,99 @@ export default function DonationScreen() {
       const cents = Math.round(parseFloat(amount) * 100);
       const clientSecret = await fetchClientSecret(cents, name, email);
 
-      const { error } = await confirmPayment(clientSecret, {
+      const { error, paymentIntent } = await confirmPayment(clientSecret, {
         paymentMethodType: "Card",
       });
 
-      if (error) {
-        Alert.alert("Payment failed", error.message);
-      } else {
-        Alert.alert("Success", "Donation completed successfully!");
-      }
+      if (error) Alert.alert("Payment failed", error.message);
+      else Alert.alert("Success", "Donation completed successfully!");
+
     } catch (err) {
       Alert.alert("Error", err.message);
     }
-
     setLoading(false);
   };
 
   // -----------------------
-  // 🟠 PAYPAL PAYMENT
+  // 🟠 PAYPAL DONATION
   // -----------------------
-  const handlePayPalDonate = async () => {
-    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-      return Alert.alert("Enter a valid amount");
+const handlePayPalDonate = async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/donation/paypal/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount,
+        currency: "USD",
+        description: "Donation",
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.approvalLink) {
+      setPaypalUrl(data.approvalLink);
+      setPaypalModal(true);
+    } else {
+      Alert.alert("PayPal Error", "No approval link returned");
     }
 
-    try {
-      const res = await fetch(`${API_URL}/api/donation/paypal/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: parseFloat(amount).toFixed(2),
-          currency: "USD",
-          description: "Donation",
-        }),
-      });
+  } catch (e) {
+    Alert.alert("PayPal Error", e.message);
+  }
+};
 
-      const data = await res.json();
-
-      if (data.approvalLink) {
-        setPaypalUrl(data.approvalLink);
-        setPaypalModal(true);
-      } else {
-        Alert.alert("PayPal Error", data.message || "No approval link returned");
-      }
-    } catch (e) {
-      Alert.alert("PayPal Error", e.message);
-    }
-  };
 
   // --------------------------
   // PAYPAL WEBVIEW HANDLING
   // --------------------------
-  const handleWebViewChange = (navState) => {
-    const url = navState.url;
+const handleWebViewChange = (navState) => {
+  const url = navState.url;
 
-    if (url.includes("paypal/success")) {
-      const orderID = url.split("token=")[1];
+  if (url.includes("paypal/success")) {
+    const orderID = url.split("token=")[1]; // Extract PayPal orderID
 
-      fetch(`${API_URL}/api/donation/paypal/capture`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderID }),
-      })
-        .then(() => {
-          setPaypalModal(false);
-          Alert.alert("Success", "PayPal Donation Completed!");
-        })
-        .catch(() => Alert.alert("Error", "Could not capture payment"));
-    }
-
-    if (url.includes("paypal/cancel")) {
+    fetch(`${API_URL}/api/donation/paypal/capture`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderID }),
+    })
+    .then(res => res.json())
+    .then(() => {
       setPaypalModal(false);
-      Alert.alert("Cancelled", "Donation cancelled");
-    }
-  };
+      Alert.alert("Success", "PayPal Donation Completed!");
+    })
+    .catch(() => Alert.alert("Error", "Could not capture payment"));
+  }
+
+  if (url.includes("paypal/cancel")) {
+    setPaypalModal(false);
+    Alert.alert("Cancelled", "Donation cancelled");
+  }
+};
+
+
+  // -----------------------
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.header}>Support Our Mission</Text>
-      <Text style={styles.subtitle}>Choose your preferred payment method</Text>
 
-      {/* DONATION INFO */}
-      <View style={styles.infoCard}>
+      <View style={styles.cardContainer}>
         <TextInput
           value={name}
           onChangeText={setName}
           style={styles.input}
-          placeholder="Full Name"
+          placeholder="Name"
+          placeholderTextColor="#999"
         />
 
         <TextInput
           value={email}
           onChangeText={setEmail}
           style={styles.input}
-          placeholder="Email Address"
+          placeholder="Email"
+          placeholderTextColor="#999"
           keyboardType="email-address"
         />
 
@@ -155,215 +152,153 @@ export default function DonationScreen() {
           value={amount}
           onChangeText={setAmount}
           style={styles.input}
-          placeholder="Donation Amount (USD)"
+          placeholder="Amount (USD)"
           keyboardType="decimal-pad"
         />
-      </View>
 
-      {/* STRIPE CARD PAYMENT */}
-      <View style={styles.paymentCard}>
-        <View style={styles.paymentHeader}>
-          <Text style={styles.paymentTitle}>Pay with Card</Text>
-          <Text style={styles.badgeStripe}>Stripe</Text>
-        </View>
-
+        <Text style={styles.section}>Pay With Card</Text>
         <CardField
           ref={cardRef}
           postalCodeEnabled={false}
           style={styles.cardField}
-          cardStyle={{ backgroundColor: "#f1f5ff", textColor: "#000" }}
+          cardStyle={{ backgroundColor: "#eef2f7", textColor: "#000" }}
           onCardChange={(c) => setCardComplete(c.complete)}
         />
 
         <TouchableOpacity
-          style={[styles.stripeButton, (!cardComplete || loading) && styles.disabled]}
+          style={[styles.button, (!cardComplete || loading) && styles.buttonDisabled]}
           onPress={handleCardDonate}
           disabled={!cardComplete || loading}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>
-              Donate ${amount || "0"} with Card
-            </Text>
-          )}
+          {loading ? <ActivityIndicator color="#fff"/> : <Text style={styles.buttonText}>Donate ${amount} (Card)</Text>}
         </TouchableOpacity>
       </View>
 
-      {/* PAYPAL PAYMENT */}
-      <View style={styles.paymentCard}>
-        <View style={styles.paymentHeader}>
-          <Text style={styles.paymentTitle}>Pay with PayPal</Text>
-          <Text style={styles.badgePaypal}>PayPal</Text>
-        </View>
+      <Text style={styles.or}>— OR —</Text>
 
-        <Text style={styles.paypalDescription}>
-          Pay securely using your PayPal balance or linked bank/card.
-        </Text>
+      <TouchableOpacity
+        style={styles.paypalButton}
+        onPress={handlePayPalDonate}
+      >
+        <Text style={styles.paypalText}>Donate with PayPal</Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity style={styles.paypalButton} onPress={handlePayPalDonate}>
-          <Text style={styles.paypalText}>
-            Donate ${amount || "0"} with PayPal
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* PAYPAL MODAL */}
+      {/* PayPal WebView */}
       <Modal visible={paypalModal} animationType="slide">
         <WebView
           source={{ uri: paypalUrl }}
           onNavigationStateChange={handleWebViewChange}
         />
-
         <TouchableOpacity
           style={styles.cancelButton}
           onPress={() => setPaypalModal(false)}
         >
-          <Text style={styles.cancelText}>Close PayPal</Text>
+          <Text style={styles.cancelText}>Close</Text>
         </TouchableOpacity>
       </Modal>
 
-      <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.back}
+        onPress={() => navigation.goBack()}
+      >
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 
+// -----------------------
+// STYLES
+// -----------------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8faff",
     padding: 20,
+    paddingTop: 50,
   },
-
   header: {
     fontSize: 28,
     fontWeight: "700",
     textAlign: "center",
-    marginTop: 40,
-    marginBottom: 5,
-  },
-
-  subtitle: {
-    textAlign: "center",
-    color: "#666",
     marginBottom: 20,
-    fontSize: 15,
+    color: "#1F1F1F",
   },
-
-  infoCard: {
+  cardContainer: {
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    elevation: 3,
+    borderRadius: 18,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 5,
   },
-
+  section: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 10,
+    marginTop: 10,
+    color: "#333",
+  },
   input: {
     backgroundColor: "#eef2f7",
     padding: 14,
     borderRadius: 12,
     fontSize: 16,
-    marginBottom: 12,
+    marginBottom: 15,
   },
-
-  paymentCard: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 20,
-    elevation: 4,
-  },
-
-  paymentHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-
-  paymentTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-
-  badgeStripe: {
-    backgroundColor: "#635BFF",
-    color: "#fff",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    fontSize: 12,
-  },
-
-  badgePaypal: {
-    backgroundColor: "#003087",
-    color: "#fff",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    fontSize: 12,
-  },
-
   cardField: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#f1f5ff",
+    backgroundColor: "#eef2f7",
     padding: 10,
     marginBottom: 20,
   },
-
-  stripeButton: {
-    backgroundColor: "#635BFF",
+  button: {
+    backgroundColor: "#1F6FEB",
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: "center",
+    marginBottom: 20,
   },
-
+  buttonDisabled: {
+    backgroundColor: "#9bb8e2",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 17,
+  },
+  or: {
+    textAlign: "center",
+    marginVertical: 15,
+    color: "#777",
+    fontSize: 14,
+  },
   paypalButton: {
     backgroundColor: "#FFC439",
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: "center",
   },
-
   paypalText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
     color: "#111",
   },
-
-  paypalDescription: {
-    color: "#666",
-    marginBottom: 12,
-  },
-
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  disabled: {
-    opacity: 0.6,
-  },
-
   cancelButton: {
     padding: 15,
     backgroundColor: "#eee",
     alignItems: "center",
   },
-
   cancelText: {
     fontSize: 16,
     color: "#444",
   },
-
   back: {
-    marginBottom: 40,
+    marginTop: 20,
     alignItems: "center",
   },
-
   backText: {
     color: "#555",
     fontSize: 16,
