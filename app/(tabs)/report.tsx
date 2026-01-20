@@ -286,7 +286,7 @@ const IceReporter = () => {
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.7,
     });
     if (!result.canceled) setImage(result.assets[0]);
