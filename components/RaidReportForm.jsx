@@ -15,7 +15,7 @@ export default function RaidReportForm({
   setDescription,
   reportedAddress,
   pickImage,
-  image,
+  images,
   selectedCategory,
   categoryOptions,
   menuVisible,
@@ -84,7 +84,10 @@ export default function RaidReportForm({
           mode="outlined"
           outlineColor="#E0E4EA"
           activeOutlineColor="#007AFF"
-          placeholder={t("iceReporter.sourceLinkPlaceholder", "https://facebook.com/post...")}
+          placeholder={t(
+            "iceReporter.sourceLinkPlaceholder",
+            "https://facebook.com/post..."
+          )}
         />
 
         {/* Car Plate Number Input */}
@@ -108,10 +111,14 @@ export default function RaidReportForm({
               <TouchableOpacity onPress={() => setMenuVisible(true)}>
                 <View style={ui.categoryInput}>
                   {selectedCategory?.icon && (
-                    <Image source={selectedCategory.icon} style={ui.categoryIcon} />
+                    <Image
+                      source={selectedCategory.icon}
+                      style={ui.categoryIcon}
+                    />
                   )}
                   <Text style={ui.categoryText}>
-                    {selectedCategory?.label || t("iceReporter.selectCategory", "Select Category")}
+                    {selectedCategory?.label ||
+                      t("iceReporter.selectCategory", "Select Category")}
                   </Text>
                   <Ionicons name="chevron-down" size={22} color="#666" />
                 </View>
@@ -129,7 +136,9 @@ export default function RaidReportForm({
                   setMenuVisible(false);
                 }}
               >
-                {option.icon && <Image source={option.icon} style={ui.menuIcon} />}
+                {option.icon && (
+                  <Image source={option.icon} style={ui.menuIcon} />
+                )}
                 <Text style={ui.menuLabel}>{option.label}</Text>
               </TouchableOpacity>
             ))}
@@ -153,27 +162,36 @@ export default function RaidReportForm({
             fontWeight: "600",
           }}
         >
-          {image ? t("iceReporter.changeImage") : t("iceReporter.pickImage")}
+          {images.length > 0
+            ? t("iceReporter.addMoreImages")
+            : t("iceReporter.pickImage")}
         </Button>
 
         {/* Image Preview */}
-        {image && (
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedImage([{ uri: image.uri }]);
-              setIsVisible(true);
-            }}
+        {images.length > 0 && (
+          <View
+            style={{ marginTop: 12, flexDirection: "row", flexWrap: "wrap" }}
           >
-            <Image
-              source={{ uri: image.uri }}
-              style={{
-                width: "100%",
-                height: 200,
-                marginTop: 10,
-                borderRadius: 12,
-              }}
-            />
-          </TouchableOpacity>
+            {images.map((img, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  setSelectedImage(images.map((i) => ({ uri: i.uri })));
+                  setIsVisible(true);
+                }}
+                style={{ marginRight: 8, marginBottom: 8 }}
+              >
+                <Image
+                  source={{ uri: img.uri }}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 10,
+                  }}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
         )}
 
         {/* Submit Button */}
@@ -203,7 +221,9 @@ export default function RaidReportForm({
               }}
             >
               <ActivityIndicator color="#fff" style={{ marginRight: 10 }} />
-              <Text style={{ color: "#fff" }}>{t("iceReporter.submitting", "Submitting...")}</Text>
+              <Text style={{ color: "#fff" }}>
+                {t("iceReporter.submitting", "Submitting...")}
+              </Text>
             </View>
           ) : (
             t("iceReporter.reportRaid")

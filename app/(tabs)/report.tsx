@@ -51,7 +51,7 @@ const IceReporter = () => {
   const [location, setLocation] = useState(null);
   const [description, setDescription] = useState("");
   const [reportedAddress, setReportedAddress] = useState("");
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
   const [radius, setRadius] = useState(500);
   const [region, setRegion] = useState({
     latitude: 6.5243793,
@@ -69,7 +69,7 @@ const IceReporter = () => {
   const { t } = useTranslation();
 
   const [visible, setIsVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState([]);
 
   const categoryOptions = [
     {
@@ -198,10 +198,6 @@ const IceReporter = () => {
   }, []);
 
   useEffect(() => {
-    startBackgroundLocationUpdates();
-  }, []);
-
-  useEffect(() => {
     return () => {
       sheetUnsubscribeRef.current?.();
     };
@@ -284,12 +280,28 @@ const IceReporter = () => {
   };
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 0.7,
-    });
-    if (!result.canceled) setImage(result.assets[0]);
+    try {
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permission.status !== "granted") {
+        alert("Permission required to access photos");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        const newImage = result.assets[0];
+        setImages((prevImages) => [...prevImages, newImage]); // ✅ FIX
+      }
+    } catch (error) {
+      console.log("Image picker error:", error);
+    }
   };
 
   const reportRaid = async () => {
@@ -312,17 +324,23 @@ const IceReporter = () => {
       formData.append("sourceLink", sourceLink);
       formData.append("carPlateNumber", carPlateNumber);
 
-      if (image) {
-        const localUri = image.uri;
+      images.forEach((img) => {
+        const localUri = img.uri;
         const filename = localUri.split("/").pop();
         const match = /\.(\w+)$/.exec(filename ?? "");
-        const type = match ? `image/${match[1]}` : `image`;
+        const type = match ? `image/${match[1]}` : "image";
+
         const correctedUri =
-          Platform.OS === "android"
-            ? localUri
-            : localUri.replace("file://", "file:///");
-        formData.append("file", { uri: correctedUri, name: filename, type });
-      }
+          Platform.OS === "ios" && !localUri.startsWith("file:///")
+            ? localUri.replace("file://", "file:///")
+            : localUri;
+
+        formData.append("files", {
+          uri: correctedUri,
+          name: filename,
+          type,
+        });
+      });
 
       // 1️⃣ Upload raid
       const response = await fetch(API_URL, {
@@ -355,7 +373,7 @@ const IceReporter = () => {
 
       Alert.alert(t("iceReporter.success"), t("iceReporter.raidReported"));
       setDescription("");
-      setImage(null);
+      setImages([]);
     } catch (error) {
       console.error("Upload error:", error);
       Alert.alert(t("iceReporter.error"), error.message);
@@ -488,7 +506,7 @@ const IceReporter = () => {
             setDescription={setDescription}
             reportedAddress={reportedAddress}
             pickImage={pickImage}
-            image={image}
+            images={images}
             selectedCategory={selectedCategory}
             categoryOptions={categoryOptions}
             menuVisible={menuVisible}
@@ -557,22 +575,40 @@ const IceReporter = () => {
                         })
                       : t("iceReporter.timeNotAvailable")}
                   </Text>
-
-                  {selectedRaid.imageUrl && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSelectedImage([{ uri: selectedRaid.imageUrl }]);
-                        setIsVisible(true);
-                      }}
-                      style={{ marginTop: 12 }}
-                    >
-                      <Image
-                        source={{ uri: selectedRaid.imageUrl }}
-                        style={{ width: "100%", height: 200, borderRadius: 16 }}
-                        resizeMode="cover"
+                  {Array.isArray(selectedRaid.imageUrls) &&
+                    selectedRaid.imageUrls.length > 0 && (
+                      <FlatList
+                        data={selectedRaid.imageUrls}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={(item, index) => index.toString()}
+                        style={{ marginTop: 12 }}
+                        renderItem={({ item }) => (
+                          <TouchableOpacity
+                            onPress={() => {
+                              setSelectedImage(
+                                selectedRaid.imageUrls.map((url) => ({
+                                  uri: url,
+                                }))
+                              );
+                              setIsVisible(true);
+                            }}
+                          >
+                            <Image
+                              source={{ uri: item }}
+                              style={{
+                                width: 300,
+                                height: 200,
+                                borderRadius: 16,
+                                marginRight: 12,
+                              }}
+                              resizeMode="cover"
+                            />
+                          </TouchableOpacity>
+                        )}
                       />
-                    </TouchableOpacity>
-                  )}
+                    )}
 
                   {/* Toggle Comments Button */}
                   {!showComments && (
