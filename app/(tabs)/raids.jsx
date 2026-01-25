@@ -33,6 +33,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { Image } from "react-native";
 import moment from "moment";
+import ImageSlider from "../../components/ImageSlider";
+
 
 const RaidPage = () => {
   const [raids, setRaids] = useState([]);
@@ -189,6 +191,7 @@ const RaidPage = () => {
     });
   };
 
+
   if (loading || authLoading) {
     return (
       <ActivityIndicator
@@ -277,6 +280,10 @@ const RaidPage = () => {
                     <Text style={styles.boldText}>Description: </Text>
                     {raid.description}
                   </Text>
+
+                  <ImageSlider images={raid.imageUrls || []} />
+
+                  
                   <Text style={styles.raidText}>
                     <Text style={styles.boldText}>Reported By: </Text>
                     {raid.reportedByName || "Anonymous"}

@@ -8,7 +8,7 @@ import {
   Alert,
   StyleSheet,
   Keyboard,
-  Modal
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { CardField, useConfirmPayment } from "@stripe/stripe-react-native";
@@ -58,7 +58,6 @@ export default function DonationScreen() {
 
       if (error) Alert.alert("Payment failed", error.message);
       else Alert.alert("Success", "Donation completed successfully!");
-
     } catch (err) {
       Alert.alert("Error", err.message);
     }
@@ -68,61 +67,58 @@ export default function DonationScreen() {
   // -----------------------
   // 🟠 PAYPAL DONATION
   // -----------------------
-const handlePayPalDonate = async () => {
-  try {
-    const res = await fetch(`${API_URL}/api/donation/paypal/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount,
-        currency: "USD",
-        description: "Donation",
-      }),
-    });
+  const handlePayPalDonate = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/donation/paypal/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount,
+          currency: "USD",
+          description: "Donation",
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.approvalLink) {
-      setPaypalUrl(data.approvalLink);
-      setPaypalModal(true);
-    } else {
-      Alert.alert("PayPal Error", "No approval link returned");
+      if (data.approvalLink) {
+        setPaypalUrl(data.approvalLink);
+        setPaypalModal(true);
+      } else {
+        Alert.alert("PayPal Error", "No approval link returned");
+      }
+    } catch (e) {
+      Alert.alert("PayPal Error", e.message);
     }
-
-  } catch (e) {
-    Alert.alert("PayPal Error", e.message);
-  }
-};
-
+  };
 
   // --------------------------
   // PAYPAL WEBVIEW HANDLING
   // --------------------------
-const handleWebViewChange = (navState) => {
-  const url = navState.url;
+  const handleWebViewChange = (navState) => {
+    const url = navState.url;
 
-  if (url.includes("paypal/success")) {
-    const orderID = url.split("token=")[1]; // Extract PayPal orderID
+    if (url.includes("paypal/success")) {
+      const orderID = url.split("token=")[1]; // Extract PayPal orderID
 
-    fetch(`${API_URL}/api/donation/paypal/capture`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderID }),
-    })
-    .then(res => res.json())
-    .then(() => {
+      fetch(`${API_URL}/api/donation/paypal/capture`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderID }),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          setPaypalModal(false);
+          Alert.alert("Success", "PayPal Donation Completed!");
+        })
+        .catch(() => Alert.alert("Error", "Could not capture payment"));
+    }
+
+    if (url.includes("paypal/cancel")) {
       setPaypalModal(false);
-      Alert.alert("Success", "PayPal Donation Completed!");
-    })
-    .catch(() => Alert.alert("Error", "Could not capture payment"));
-  }
-
-  if (url.includes("paypal/cancel")) {
-    setPaypalModal(false);
-    Alert.alert("Cancelled", "Donation cancelled");
-  }
-};
-
+      Alert.alert("Cancelled", "Donation cancelled");
+    }
+  };
 
   // -----------------------
 
@@ -153,7 +149,9 @@ const handleWebViewChange = (navState) => {
           onChangeText={setAmount}
           style={styles.input}
           placeholder="Amount (USD)"
+          placeholderTextColor="#999"
           keyboardType="decimal-pad"
+          returnKeyType="done"
         />
 
         <Text style={styles.section}>Pay With Card</Text>
@@ -166,11 +164,18 @@ const handleWebViewChange = (navState) => {
         />
 
         <TouchableOpacity
-          style={[styles.button, (!cardComplete || loading) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (!cardComplete || loading) && styles.buttonDisabled,
+          ]}
           onPress={handleCardDonate}
           disabled={!cardComplete || loading}
         >
-          {loading ? <ActivityIndicator color="#fff"/> : <Text style={styles.buttonText}>Donate ${amount} (Card)</Text>}
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Donate ${amount} (Card)</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -197,10 +202,7 @@ const handleWebViewChange = (navState) => {
         </TouchableOpacity>
       </Modal>
 
-      <TouchableOpacity
-        style={styles.back}
-        onPress={() => navigation.goBack()}
-      >
+      <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
     </View>
@@ -246,6 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 16,
     marginBottom: 15,
+    zIndex: 2,
   },
   cardField: {
     height: 50,
@@ -253,6 +256,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#eef2f7",
     padding: 10,
     marginBottom: 20,
+    marginTop: 10, // 👈 ADD
+    zIndex: 1, // 👈 ADD
   },
   button: {
     backgroundColor: "#1F6FEB",

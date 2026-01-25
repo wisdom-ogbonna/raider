@@ -37,8 +37,14 @@ import BottomSheet, {
 import { useMemo } from "react";
 import { KeyboardAvoidingView } from "react-native";
 
-// Firestore extras for comments
-import { addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  serverTimestamp,
+  doc,
+  setDoc,
+  deleteDoc,
+} from "firebase/firestore";
+
 import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import RaidReportForm from "../../components/RaidReportForm";
@@ -109,6 +115,12 @@ const IceReporter = () => {
   // comments state (optional)
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
+  const [reactionCounts, setReactionCounts] = useState({
+    likes: 0,
+    dislikes: 0,
+  });
+  const [userReaction, setUserReaction] = useState(null);
+
   const sheetUnsubscribeRef = useRef(null);
   const [showComments, setShowComments] = useState(false);
   const [reporting, setReporting] = useState(false); // ✅ New loading state
@@ -211,40 +223,55 @@ const IceReporter = () => {
 
   // when a marker is tapped
   const handleMarkerPress = (raid) => {
-    // cleanup previous listener
     sheetUnsubscribeRef.current?.();
+
     setSelectedRaid(raid);
     setCommentText("");
-    sheetRef.current?.snapToIndex(1); // open mid snap
+    setShowComments(false);
+    sheetRef.current?.snapToIndex(1);
 
-    // subscribe to comments subcollection: ice_raids/{raidId}/comments
-    try {
-      const commentsQuery = query(
-        collection(db, "ice_raids", raid.id, "comments"),
-        orderBy("createdAt", "desc")
-      );
+    // 🔹 COMMENTS LISTENER
+    const commentsQuery = query(
+      collection(db, "ice_raids", raid.id, "comments"),
+      orderBy("createdAt", "desc")
+    );
 
-      const unsubscribe = onSnapshot(
-        commentsQuery,
-        (snapshot) => {
-          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-          setComments(list);
-        },
-        (err) => {
-          console.error("Comments listener error", err);
-          setComments([]);
-        }
-      );
-      sheetUnsubscribeRef.current = unsubscribe;
-    } catch (err) {
-      console.error("Comments subscribe error", err);
-    }
+    const unsubComments = onSnapshot(commentsQuery, (snapshot) => {
+      const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setComments(list);
+    });
+
+    // 🔹 REACTIONS LISTENER
+    const reactionsRef = collection(db, "ice_raids", raid.id, "reactions");
+
+    const unsubReactions = onSnapshot(reactionsRef, (snapshot) => {
+      let likes = 0;
+      let dislikes = 0;
+      let mine = null;
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.type === "like") likes++;
+        if (data.type === "dislike") dislikes++;
+        if (docSnap.id === user?.uid) mine = data.type;
+      });
+
+      setReactionCounts({ likes, dislikes });
+      setUserReaction(mine);
+    });
+
+    sheetUnsubscribeRef.current = () => {
+      unsubComments();
+      unsubReactions();
+    };
   };
 
   const closeSheet = () => {
     sheetRef.current?.close();
     setSelectedRaid(null);
     setComments([]);
+    setReactionCounts({ likes: 0, dislikes: 0 });
+    setUserReaction(null);
     sheetUnsubscribeRef.current?.();
     sheetUnsubscribeRef.current = null;
   };
@@ -262,6 +289,18 @@ const IceReporter = () => {
     } catch (err) {
       console.error("Failed to post comment", err);
       Alert.alert(t("iceReporter.error"), t("iceReporter.failedToPostComment"));
+    }
+  };
+
+  const reactToRaid = async (type) => {
+    if (!user || !selectedRaid) return;
+
+    const ref = doc(db, "ice_raids", selectedRaid.id, "reactions", user.uid);
+
+    if (userReaction === type) {
+      await deleteDoc(ref); // remove reaction
+    } else {
+      await setDoc(ref, { type }); // like or dislike
     }
   };
 
@@ -549,90 +588,72 @@ const IceReporter = () => {
               ListHeaderComponent={
                 <View
                   style={{
-                    backgroundColor: "#f9f9f9",
-                    borderRadius: 16,
-                    padding: 16,
-                    marginBottom: 16,
+                    backgroundColor: "#fff",
+                    borderRadius: 20,
+                    padding: 18,
+                    marginBottom: 14,
+                    shadowColor: "#000",
+                    shadowOpacity: 0.06,
+                    shadowRadius: 10,
+                    elevation: 3,
                   }}
                 >
-                  <Text
-                    style={{ fontSize: 20, fontWeight: "700", marginBottom: 6 }}
-                  >
+                  <Text style={{ fontSize: 20, fontWeight: "700" }}>
                     {selectedRaid.reportedAddress ||
                       t("iceReporter.unknownLocation")}
                   </Text>
 
-                  <Text
-                    style={{ fontSize: 15, color: "#444", marginBottom: 10 }}
-                  >
+                  <Text style={{ fontSize: 15, color: "#555", marginTop: 6 }}>
                     {selectedRaid.description || t("iceReporter.noDescription")}
                   </Text>
 
-                  <Text style={{ color: "#999", fontSize: 13 }}>
+                  <Text style={{ color: "#999", fontSize: 12, marginTop: 4 }}>
                     {selectedRaid.createdAt
                       ? formatDistanceToNow(selectedRaid.createdAt, {
                           addSuffix: true,
                         })
                       : t("iceReporter.timeNotAvailable")}
                   </Text>
-                  {Array.isArray(selectedRaid.imageUrls) &&
-                    selectedRaid.imageUrls.length > 0 && (
-                      <FlatList
-                        data={selectedRaid.imageUrls}
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={(item, index) => index.toString()}
-                        style={{ marginTop: 12 }}
-                        renderItem={({ item }) => (
-                          <TouchableOpacity
-                            onPress={() => {
-                              setSelectedImage(
-                                selectedRaid.imageUrls.map((url) => ({
-                                  uri: url,
-                                }))
-                              );
-                              setIsVisible(true);
-                            }}
-                          >
-                            <Image
-                              source={{ uri: item }}
-                              style={{
-                                width: 300,
-                                height: 200,
-                                borderRadius: 16,
-                                marginRight: 12,
-                              }}
-                              resizeMode="cover"
-                            />
-                          </TouchableOpacity>
-                        )}
-                      />
-                    )}
 
-                  {/* Toggle Comments Button */}
-                  {!showComments && (
+                  {/* 🔥 REACTION BAR */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-around",
+                      marginTop: 18,
+                      borderTopWidth: 1,
+                      borderTopColor: "#eee",
+                      paddingTop: 14,
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => reactToRaid("like")}
+                      style={{ alignItems: "center" }}
+                    >
+                      <Text style={{ fontSize: 24 }}>
+                        {userReaction === "like" ? "❤️" : "🤍"}
+                      </Text>
+                      <Text>{reactionCounts.likes}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => reactToRaid("dislike")}
+                      style={{ alignItems: "center" }}
+                    >
+                      <Text style={{ fontSize: 24 }}>
+                        {userReaction === "dislike" ? "👎🏽" : "👎"}
+                      </Text>
+                      <Text>{reactionCounts.dislikes}</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity
                       onPress={() => setShowComments(true)}
-                      style={{
-                        backgroundColor: "#007AFF",
-                        paddingVertical: 12,
-                        borderRadius: 12,
-                        alignItems: "center",
-                        marginTop: 16,
-                      }}
+                      style={{ alignItems: "center" }}
                     >
-                      <Text
-                        style={{
-                          color: "#fff",
-                          fontWeight: "600",
-                          fontSize: 15,
-                        }}
-                      >
-                        {t("iceReporter.viewComments")} ({comments.length})
-                      </Text>
+                      <Text style={{ fontSize: 24 }}>💬</Text>
+                      <Text>{comments.length}</Text>
                     </TouchableOpacity>
-                  )}
+                  </View>
                 </View>
               }
               renderItem={({ item }) => {
@@ -722,12 +743,42 @@ const IceReporter = () => {
               }}
               ListFooterComponent={
                 showComments && (
-                  <View style={{ paddingVertical: 12 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginTop: 10,
+                      borderTopWidth: 1,
+                      borderTopColor: "#eee",
+                      paddingTop: 10,
+                    }}
+                  >
                     <TextInput
                       placeholder={t("iceReporter.writeComment")}
                       value={commentText}
                       onChangeText={setCommentText}
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#f2f2f7",
+                        borderRadius: 20,
+                        paddingHorizontal: 14,
+                        height: 44,
+                      }}
                     />
+                    <TouchableOpacity
+                      onPress={postComment}
+                      style={{
+                        marginLeft: 10,
+                        backgroundColor: "#007AFF",
+                        paddingHorizontal: 18,
+                        paddingVertical: 10,
+                        borderRadius: 20,
+                      }}
+                    >
+                      <Text style={{ color: "#fff", fontWeight: "600" }}>
+                        Post
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )
               }
