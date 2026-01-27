@@ -38,7 +38,16 @@ import { useMemo } from "react";
 import { KeyboardAvoidingView } from "react-native";
 
 // Firestore extras for comments
-import { addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  serverTimestamp,
+  updateDoc,
+  doc,
+  increment,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
+
 import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import RaidReportForm from "../../components/RaidReportForm";
@@ -72,31 +81,34 @@ const IceReporter = () => {
   const [selectedImage, setSelectedImage] = useState([]);
 
   const categoryOptions = [
-    {
-      label: t("iceReporter.sosGettingDetained"),
-      value: "sos",
-      icon: require("../../assets/icons/abandoned_vehicle.png"),
+        {
+      label: t("iceReporter.checkpointRoadblock"),
+      value: "checkpoint",
+      icon: require("../../assets/icons/sos_emergency.png"),
+    },
+
+        {
+      label: t("iceReporter.secondHandReport"),
+      value: "second_hand",
+      icon: require("../../assets/icons/unusual_vehicle.png"),
     },
     {
       label: t("iceReporter.suspiciousVehicle"),
       value: "suspicious",
       icon: require("../../assets/icons/law_enforcement.png"),
     },
-    {
-      label: t("iceReporter.checkpointRoadblock"),
-      value: "checkpoint",
-      icon: require("../../assets/icons/sos_emergency.png"),
-    },
+
     {
       label: t("iceReporter.iceAgentsOnSight"),
       value: "ice_agents",
       icon: require("../../assets/icons/traffic_checkpoint.png"),
     },
-    {
-      label: t("iceReporter.secondHandReport"),
-      value: "second_hand",
-      icon: require("../../assets/icons/unusual_vehicle.png"),
+        {
+      label: t("iceReporter.sosGettingDetained"),
+      value: "sos",
+      icon: require("../../assets/icons/abandoned_vehicle.png"),
     },
+
   ];
 
   const [menuVisible, setMenuVisible] = useState(false);
@@ -116,6 +128,7 @@ const IceReporter = () => {
   const [sourceLink, setSourceLink] = useState("");
   const [carPlateNumber, setCarPlateNumber] = useState("");
   const now = new Date();
+  const [liveRaid, setLiveRaid] = useState(null);
 
   useEffect(() => {
     const raidQuery = query(
@@ -209,36 +222,43 @@ const IceReporter = () => {
     }
   }, [user]);
 
-  // when a marker is tapped
   const handleMarkerPress = (raid) => {
-    // cleanup previous listener
+    // cleanup previous listeners
     sheetUnsubscribeRef.current?.();
+
     setSelectedRaid(raid);
+    setLiveRaid(null);
     setCommentText("");
-    sheetRef.current?.snapToIndex(1); // open mid snap
+    setShowComments(false);
+    sheetRef.current?.snapToIndex(1);
 
-    // subscribe to comments subcollection: ice_raids/{raidId}/comments
-    try {
-      const commentsQuery = query(
-        collection(db, "ice_raids", raid.id, "comments"),
-        orderBy("createdAt", "desc")
-      );
+    const unsubscribers = [];
 
-      const unsubscribe = onSnapshot(
-        commentsQuery,
-        (snapshot) => {
-          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-          setComments(list);
-        },
-        (err) => {
-          console.error("Comments listener error", err);
-          setComments([]);
-        }
-      );
-      sheetUnsubscribeRef.current = unsubscribe;
-    } catch (err) {
-      console.error("Comments subscribe error", err);
-    }
+    // 🔥 RAID REALTIME LISTENER
+    const raidRef = doc(db, "ice_raids", raid.id);
+    const unsubscribeRaid = onSnapshot(raidRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setLiveRaid({ id: docSnap.id, ...docSnap.data() });
+      }
+    });
+    unsubscribers.push(unsubscribeRaid);
+
+    // 💬 COMMENTS REALTIME LISTENER
+    const commentsQuery = query(
+      collection(db, "ice_raids", raid.id, "comments"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
+      const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setComments(list);
+    });
+    unsubscribers.push(unsubscribeComments);
+
+    // Save combined cleanup
+    sheetUnsubscribeRef.current = () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
   };
 
   const closeSheet = () => {
@@ -262,6 +282,71 @@ const IceReporter = () => {
     } catch (err) {
       console.error("Failed to post comment", err);
       Alert.alert(t("iceReporter.error"), t("iceReporter.failedToPostComment"));
+    }
+  };
+  const handleReaction = async (type) => {
+    if (!user || !raidData) return;
+
+    const raidRef = doc(db, "ice_raids", raidData.id);
+    const uid = user.uid;
+
+    const alreadyLiked = raidData.likedBy?.includes(uid);
+    const alreadyDisliked = raidData.dislikedBy?.includes(uid);
+
+    try {
+      // 👍 LIKE BUTTON PRESSED
+      if (type === "like") {
+        // If already liked → remove like
+        if (alreadyLiked) {
+          await updateDoc(raidRef, {
+            likes: increment(-1),
+            likedBy: arrayRemove(uid),
+          });
+          return;
+        }
+
+        // If previously disliked → remove dislike first
+        if (alreadyDisliked) {
+          await updateDoc(raidRef, {
+            dislikes: increment(-1),
+            dislikedBy: arrayRemove(uid),
+          });
+        }
+
+        // Add like
+        await updateDoc(raidRef, {
+          likes: increment(1),
+          likedBy: arrayUnion(uid),
+        });
+      }
+
+      // 👎 DISLIKE BUTTON PRESSED
+      if (type === "dislike") {
+        // If already disliked → remove dislike
+        if (alreadyDisliked) {
+          await updateDoc(raidRef, {
+            dislikes: increment(-1),
+            dislikedBy: arrayRemove(uid),
+          });
+          return;
+        }
+
+        // If previously liked → remove like first
+        if (alreadyLiked) {
+          await updateDoc(raidRef, {
+            likes: increment(-1),
+            likedBy: arrayRemove(uid),
+          });
+        }
+
+        // Add dislike
+        await updateDoc(raidRef, {
+          dislikes: increment(1),
+          dislikedBy: arrayUnion(uid),
+        });
+      }
+    } catch (err) {
+      console.log("Reaction error:", err);
     }
   };
 
@@ -407,6 +492,18 @@ const IceReporter = () => {
       console.error("Failed to save push token", err);
     }
   };
+  const getReactionColor = () => {
+    if (!raidData) return "#f2f2f7";
+
+    const likes = raidData.likes || 0;
+    const dislikes = raidData.dislikes || 0;
+
+    if (likes > dislikes) return "#e6f9ed";
+    if (dislikes > likes) return "#fdecea";
+    return "#f2f2f7";
+  };
+
+  const raidData = liveRaid || selectedRaid;
 
   if (loading)
     return (
@@ -575,6 +672,97 @@ const IceReporter = () => {
                         })
                       : t("iceReporter.timeNotAvailable")}
                   </Text>
+                  {/* Reaction Bar */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginTop: 14,
+                      paddingVertical: 10,
+                      paddingHorizontal: 12,
+                      backgroundColor: getReactionColor(),
+                      borderRadius: 14,
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => handleReaction("like")}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        opacity: raidData?.likedBy?.includes(user?.uid)
+                          ? 1
+                          : 0.6,
+                      }}
+                    >
+                      <Ionicons
+                        name="thumbs-up"
+                        size={22}
+                        color={
+                          raidData?.likedBy?.includes(user?.uid)
+                            ? "#16a34a"
+                            : "#777"
+                        }
+                      />
+                      <Text
+                        style={{
+                          marginLeft: 6,
+                          fontWeight: "700",
+                          color: raidData?.likedBy?.includes(user?.uid)
+                            ? "#16a34a"
+                            : "#333",
+                        }}
+                      >
+                        {raidData?.likes || 0}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => handleReaction("dislike")}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        opacity: raidData?.dislikedBy?.includes(user?.uid)
+                          ? 1
+                          : 0.6,
+                      }}
+                    >
+                      <Ionicons
+                        name="thumbs-down"
+                        size={22}
+                        color={
+                          raidData?.dislikedBy?.includes(user?.uid)
+                            ? "#dc2626"
+                            : "#777"
+                        }
+                      />
+                      <Text
+                        style={{
+                          marginLeft: 6,
+                          fontWeight: "700",
+                          color: raidData?.dislikedBy?.includes(user?.uid)
+                            ? "#dc2626"
+                            : "#333",
+                        }}
+                      >
+                        {raidData?.dislikes || 0}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => setShowComments(true)}
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Ionicons
+                        name="chatbubble-outline"
+                        size={20}
+                        color="#777"
+                      />
+                      <Text style={{ marginLeft: 6, fontWeight: "600" }}>
+                        {comments.length}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
                   {Array.isArray(selectedRaid.imageUrls) &&
                     selectedRaid.imageUrls.length > 0 && (
                       <FlatList
@@ -722,12 +910,41 @@ const IceReporter = () => {
               }}
               ListFooterComponent={
                 showComments && (
-                  <View style={{ paddingVertical: 12 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginTop: 10,
+                      marginBottom: 30,
+                    }}
+                  >
                     <TextInput
                       placeholder={t("iceReporter.writeComment")}
                       value={commentText}
                       onChangeText={setCommentText}
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#f2f2f7",
+                        borderRadius: 20,
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        marginRight: 8,
+                      }}
                     />
+
+                    <TouchableOpacity
+                      onPress={postComment}
+                      style={{
+                        backgroundColor: "#007AFF",
+                        width: 44,
+                        height: 44,
+                        borderRadius: 22,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons name="send" size={20} color="#fff" />
+                    </TouchableOpacity>
                   </View>
                 )
               }
