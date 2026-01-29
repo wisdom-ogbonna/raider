@@ -4,7 +4,7 @@
     "slug": "Iceraider",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/myicon.png",
     "scheme": "myapp",
     "userInterfa`ceStyle": "automatic",
     "newArchEnabnled": true,
@@ -70,8 +70,8 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splashh.png",
-          "imageWidth": 600,
-          "resizeMode": "contain",
+          "imageWidth": 900,
+          "resizeMode": "cover",
           "backgroundColor": "#ffffff"
         }
       ],

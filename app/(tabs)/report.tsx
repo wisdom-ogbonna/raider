@@ -81,13 +81,13 @@ const IceReporter = () => {
   const [selectedImage, setSelectedImage] = useState([]);
 
   const categoryOptions = [
-        {
+    {
       label: t("iceReporter.checkpointRoadblock"),
       value: "checkpoint",
       icon: require("../../assets/icons/sos_emergency.png"),
     },
 
-        {
+    {
       label: t("iceReporter.secondHandReport"),
       value: "second_hand",
       icon: require("../../assets/icons/unusual_vehicle.png"),
@@ -103,12 +103,11 @@ const IceReporter = () => {
       value: "ice_agents",
       icon: require("../../assets/icons/traffic_checkpoint.png"),
     },
-        {
+    {
       label: t("iceReporter.sosGettingDetained"),
       value: "sos",
       icon: require("../../assets/icons/abandoned_vehicle.png"),
     },
-
   ];
 
   const [menuVisible, setMenuVisible] = useState(false);
@@ -504,6 +503,10 @@ const IceReporter = () => {
   };
 
   const raidData = liveRaid || selectedRaid;
+  const selectedRaidCategory = useMemo(() => {
+    if (!raidData?.category) return null;
+    return categoryOptions.find((cat) => cat.value === raidData.category);
+  }, [raidData]);
 
   if (loading)
     return (
@@ -652,6 +655,37 @@ const IceReporter = () => {
                     marginBottom: 16,
                   }}
                 >
+                  {/* 🚨 CATEGORY BADGE */}
+                  {selectedRaidCategory && (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        alignSelf: "flex-start",
+                        backgroundColor: "#eef2ff",
+                        paddingVertical: 6,
+                        paddingHorizontal: 10,
+                        borderRadius: 20,
+                        marginBottom: 10,
+                      }}
+                    >
+                      <Image
+                        source={selectedRaidCategory.icon}
+                        style={{ width: 18, height: 18, marginRight: 6 }}
+                        resizeMode="contain"
+                      />
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "600",
+                          color: "#3730a3",
+                        }}
+                      >
+                        {selectedRaidCategory.label}
+                      </Text>
+                    </View>
+                  )}
+
                   <Text
                     style={{ fontSize: 20, fontWeight: "700", marginBottom: 6 }}
                   >
@@ -890,20 +924,7 @@ const IceReporter = () => {
                         </Text>
                       </View>
 
-                      <View
-                        style={{ flexDirection: "row", marginTop: 8, gap: 24 }}
-                      >
-                        <TouchableOpacity>
-                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
-                            👍 {t("iceReporter.like")}
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                          <Text style={{ fontSize: 13, color: "#007AFF" }}>
-                            💬 {t("iceReporter.reply")}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
+
                     </View>
                   </View>
                 );
